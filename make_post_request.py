@@ -33,7 +33,7 @@ def main(argv):
                 "</Trip></Request>"
 
     if len(argv) < 5:
-        print "Usage: make_post_request.py request_url consumer_key consumer_secret access_token access_token_secret"
+        print("Usage: make_post_request.py request_url consumer_key consumer_secret access_token access_token_secret")
         return 1
     
     request_url = argv[0]
@@ -45,10 +45,10 @@ def main(argv):
     oauth_credential = tripit.OAuthConsumerCredential(consumer_key, consumer_secret, access_token, access_token_secret)
     t = tripit.TripIt(oauth_credential, api_url=request_url)
     r = t.create(trip_xml)
-    print 'RESPONSE: %s' % r
+    print('RESPONSE: %s' % r)
     id = r.get_children()[0].get_attribute_value('id')
     r = t.replace_trip(id, trip_xml2)
-    print '\nRESPONSE: %s' % r
+    print('\nRESPONSE: %s' % r)
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

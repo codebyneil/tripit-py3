@@ -25,16 +25,16 @@ from hashlib import md5
 import random
 import re
 import time
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import traceback
 import xml.sax
 import json
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 class WebAuthCredential:
     def __init__(self, username, password):
@@ -92,8 +92,8 @@ class OAuthConsumerCredential:
         params = {}
         def parse_param(param_string):
             name, value = param_string.split("=", 1)
-            params[urllib.unquote(name)] = urllib.unquote(value)
-        map(parse_param, query.split("&"))
+            params[urllib.parse.unquote(name)] = urllib.parse.unquote(value)
+        list(map(parse_param, query.split("&")))
         
         signature = params.get('oauth_signature')
         
@@ -127,8 +127,8 @@ class OAuthConsumerCredential:
         return ('OAuth realm="%s",' % (realm)) + \
             ','.join(
                 ['%s="%s"' % (_escape(k), _escape(v))
-                 for k, v in self._generate_oauth_parameters(
-                     http_method, http_url, args).items()])
+                 for k, v in list(self._generate_oauth_parameters(
+                     http_method, http_url, args).items())])
 
     def _generate_oauth_parameters(self, http_method, http_url, args):
         oauth_parameters = {
@@ -183,7 +183,7 @@ class OAuthConsumerCredential:
 # } class:OAuthConsumerCredential
 
 def _escape(s):
-    return urllib.quote(str(s), safe='~')
+    return urllib.parse.quote(str(s), safe='~')
 
 def _generate_nonce():
     random_number = ''.join(str(random.randint(0, 9)) for _ in range(40))
@@ -283,7 +283,7 @@ class TravelObj(type):
         self._children.append(child)
 
     def get_attribute_names(self):
-        return self._attributes.keys()
+        return list(self._attributes.keys())
 
     def get_attribute_value(self, name):
         if name in self._attributes:
@@ -348,7 +348,7 @@ class TripIt(object):
         args = None
         if url_args is not None:
             args = url_args
-            url = base_url + '?' + urllib.urlencode(url_args)
+            url = base_url + '?' + urllib.parse.urlencode(url_args)
         else:
             url = base_url
 
@@ -356,17 +356,17 @@ class TripIt(object):
 
         if post_args is not None:
             args = post_args
-            request = urllib2.Request(url, urllib.urlencode(post_args))
+            request = urllib.request.Request(url, urllib.parse.urlencode(post_args))
         else:
-            request = urllib2.Request(url)
+            request = urllib.request.Request(url)
             
         self._credential.authorize(request, args)
 
         stream = None
         try:
-            stream = urllib2.urlopen(request)
+            stream = urllib.request.urlopen(request)
             self.http_code = 200
-        except urllib2.HTTPError, http_error:
+        except urllib.error.HTTPError as http_error:
             self.http_code = http_error.code
             stream = http_error
 

@@ -19,13 +19,13 @@ import os
 import tripit
 
 def get_credential():
-    username = raw_input('Username: ')
+    username = input('Username: ')
     password = getpass.getpass('Password: ')
     return tripit.WebAuthCredential(username, password)
 
 api_url='https://api.tripit.com'
 
 api_url = os.getenv('API_URL') or 'https://api.tripit.com'
-print "api_url: %s" % api_url
+print("api_url: %s" % api_url)
 cred = get_credential()
 t = tripit.TripIt(cred, api_url=api_url)

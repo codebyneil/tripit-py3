@@ -20,7 +20,7 @@ import tripit
 
 def main(argv):
     if len(argv) < 5:
-        print "Usage: get_authorized_token.py api_url consumer_key consumer_secret request_token request_token_secret"
+        print("Usage: get_authorized_token.py api_url consumer_key consumer_secret request_token request_token_secret")
         return 1
     
     api_url = argv[0]
@@ -31,7 +31,7 @@ def main(argv):
 
     oauth_credential = tripit.OAuthConsumerCredential(consumer_key, consumer_secret, request_token, request_token_secret)
     t = tripit.TripIt(oauth_credential, api_url = api_url)
-    print t.get_access_token()
+    print(t.get_access_token())
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

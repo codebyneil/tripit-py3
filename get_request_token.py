@@ -24,7 +24,7 @@ def main(argv):
     consumer_secret = ""
 
     if len(argv) < 3:
-        print "Usage: get_request_token.py api_url consumer_key consumer_secret"
+        print("Usage: get_request_token.py api_url consumer_key consumer_secret")
         return 1
     else:
         api_url = argv[0]
@@ -34,7 +34,7 @@ def main(argv):
     oauth_credential = tripit.OAuthConsumerCredential(oauth_consumer_key=consumer_key, oauth_consumer_secret=consumer_secret)
 
     t = tripit.TripIt(oauth_credential, api_url = api_url)
-    print t.get_request_token()
+    print(t.get_request_token())
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
