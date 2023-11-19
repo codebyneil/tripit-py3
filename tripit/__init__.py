@@ -21,20 +21,15 @@
 import base64
 import datetime
 import hmac
-from hashlib import md5
+import hashlib
 import random
 import re
 import time
 import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
 import traceback
 import xml.sax
 import json
-
-try:
-    from io import StringIO
-except ImportError:
-    from io import StringIO
+import io
 
 class WebAuthCredential:
     def __init__(self, username, password):
@@ -121,9 +116,9 @@ class OAuthConsumerCredential:
         return json.dumps(params)
     
     def _generate_authorization_header(self, request, args):
-        realm = request.get_type() + '://' + request.get_host()
+        realm = request.type + '://' + request.host
         http_method = request.get_method().upper()
-        http_url = request.get_type() + '://' + request.get_host() + request.get_selector().split('?', 1)[0]
+        http_url = request.type + '://' + request.host + request.selector.split('?', 1)[0]
         return ('OAuth realm="%s",' % (realm)) + \
             ','.join(
                 ['%s="%s"' % (_escape(k), _escape(v))
@@ -171,14 +166,8 @@ class OAuthConsumerCredential:
         
         key = self._oauth_consumer_secret + '&' + self._oauth_token_secret
         
-        try:
-            import hashlib
-            hashed = hmac.new(key, signature_base_string, hashlib.sha1)
-        except ImportError:
-            import sha
-            hashed = hmac.new(key, signature_base_string, sha)
-    
-        return base64.b64encode(hashed.digest())
+        hashed = hmac.new(key.encode('utf-8'), signature_base_string.encode('utf-8'), "sha1")
+        return base64.b64encode(hashed.digest()).decode('utf-8')
 
 # } class:OAuthConsumerCredential
 
@@ -186,8 +175,10 @@ def _escape(s):
     return urllib.parse.quote(str(s), safe='~')
 
 def _generate_nonce():
+    m = hashlib.md5()
+    m.update(str(time.time()).encode('utf-8'))
     random_number = ''.join(str(random.randint(0, 9)) for _ in range(40))
-    m = md5(str(time.time()) + str(random_number))
+    m.update(random_number.encode('utf-8'))
     return m.hexdigest()
 
 class ResponseHandler(xml.sax.handler.ContentHandler):
@@ -370,7 +361,7 @@ class TripIt(object):
             self.http_code = http_error.code
             stream = http_error
 
-        data = stream.read()
+        data = stream.read().decode('utf-8')
         stream.close()
         self.response = data
         return data
@@ -557,5 +548,5 @@ def _xml_to_py(data):
     parser = xml.sax.make_parser()
     handler = ResponseHandler()
     parser.setContentHandler(handler)
-    parser.parse(StringIO(data))
+    parser.parse(io.StringIO(data))
     return handler.get_response_obj()
