@@ -548,5 +548,5 @@ def _xml_to_py(data):
     parser = xml.sax.make_parser()
     handler = ResponseHandler()
     parser.setContentHandler(handler)
-    parser.parse(data)
+    parser.parse(io.StringIO(data))
     return handler.get_response_obj()
