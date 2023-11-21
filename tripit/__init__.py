@@ -208,7 +208,7 @@ class ResponseHandler(xml.sax.handler.ContentHandler):
                 self._current_content = datetime.date(
                     *(time.strptime(
                         self._current_content, '%Y-%m-%d')[0:3]))
-            elif name.endswith('time'):
+            elif name.endswith('time') and name != "is_cal_localtime":
                 self._current_content = datetime.time(
                     *(time.strptime(
                         self._current_content, '%H:%M:%S')[3:6]))
@@ -548,5 +548,5 @@ def _xml_to_py(data):
     parser = xml.sax.make_parser()
     handler = ResponseHandler()
     parser.setContentHandler(handler)
-    parser.parse(io.StringIO(data))
+    parser.parse(data)
     return handler.get_response_obj()
