@@ -2,14 +2,15 @@
 name = "tripit"
 version = "0.2.0"
 description = "TripIt Python Bindings, updated for Python 3"
-authors = ["Neil <neil@example.com>"]
+authors = ["Neil <neil@machine.local>"]
 readme = "README.md"
 repository = "https://github.com/codebyneil/tripit-py3"
-
 
 [tool.poetry.dependencies]
 python = "^3.10"
 
+[tool.poetry.scripts]
+example = "scripts.example:main"
 
 [build-system]
 requires = ["poetry-core"]

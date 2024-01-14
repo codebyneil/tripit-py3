@@ -27,7 +27,7 @@ import re
 import time
 import urllib.request, urllib.parse, urllib.error
 import traceback
-import xml.sax
+import xml.sax, xml.sax.handler
 import json
 import io
 
@@ -44,7 +44,7 @@ class WebAuthCredential:
     
     def authorize(self, request, args):
         pair = "%s:%s" % (self._username, self._password)
-        token = base64.b64encode(pair)
+        token = base64.b64encode(pair) # type: ignore
         request.add_header('Authorization', 'Basic %s' % token)
 
 # } class:WebAuthCredential
@@ -115,13 +115,23 @@ class OAuthConsumerCredential:
         params['action'] = action
         return json.dumps(params)
     
+    def _generate_nonce(self):
+        m = hashlib.md5()
+        m.update(str(time.time()).encode('utf-8'))
+        random_number = ''.join(str(random.randint(0, 9)) for _ in range(40))
+        m.update(random_number.encode('utf-8'))
+        return m.hexdigest()
+    
+    def _escape(self, s):
+        return urllib.parse.quote(str(s), safe='~')
+    
     def _generate_authorization_header(self, request, args):
         realm = request.type + '://' + request.host
         http_method = request.get_method().upper()
         http_url = request.type + '://' + request.host + request.selector.split('?', 1)[0]
         return ('OAuth realm="%s",' % (realm)) + \
             ','.join(
-                ['%s="%s"' % (_escape(k), _escape(v))
+                ['%s="%s"' % (self._escape(k), self._escape(v))
                  for k, v in list(self._generate_oauth_parameters(
                      http_method, http_url, args).items())])
 
@@ -129,7 +139,7 @@ class OAuthConsumerCredential:
         oauth_parameters = {
             'oauth_consumer_key'     :
                 self._oauth_consumer_key,
-            'oauth_nonce'            : _generate_nonce(),
+            'oauth_nonce'            : self._generate_nonce(),
             'oauth_timestamp'        : str(int(time.time())),
             'oauth_signature_method' :
                 OAuthConsumerCredential.OAUTH_SIGNATURE_METHOD,
@@ -152,14 +162,14 @@ class OAuthConsumerCredential:
         return oauth_parameters
     
     def _generate_signature(self, method, base_url, params):
-        base_url = _escape(base_url)
+        base_url = self._escape(base_url)
         
         params.pop('oauth_signature', None)
         
-        parameters = _escape(
+        parameters = self._escape(
             '&'.join(
                 ['%s=%s' % \
-                 (_escape(str(k)), _escape(str(params[k]))) \
+                 (self._escape(str(k)), self._escape(str(params[k]))) \
                  for k in sorted(params)]))
 
         signature_base_string = '&'.join([method, base_url, parameters])
@@ -170,16 +180,6 @@ class OAuthConsumerCredential:
         return base64.b64encode(hashed.digest()).decode('utf-8')
 
 # } class:OAuthConsumerCredential
-
-def _escape(s):
-    return urllib.parse.quote(str(s), safe='~')
-
-def _generate_nonce():
-    m = hashlib.md5()
-    m.update(str(time.time()).encode('utf-8'))
-    random_number = ''.join(str(random.randint(0, 9)) for _ in range(40))
-    m.update(random_number.encode('utf-8'))
-    return m.hexdigest()
 
 class ResponseHandler(xml.sax.handler.ContentHandler):
     def __init__(self):
@@ -378,7 +378,11 @@ class TripIt(object):
                 entity = None
 
         response_data = self._do_request(verb, entity, params, post_args)
-        return _xml_to_py(response_data)
+        # print("Preparsed Data:", response_data)
+        if params and params.get("format", "") == "json":
+            return json.loads(response_data)
+        else:
+            return _xml_to_py(response_data)
 
     def get_trip(self, id, filter=None):
         if filter is None:
@@ -522,7 +526,7 @@ class TripIt(object):
         response = self._do_request('/oauth/request_token')
 
         if self.http_code == 200:
-            return _parse_qs(response)
+            return dict(urllib.parse.parse_qsl(response))
         else:
             return response
 
@@ -530,19 +534,11 @@ class TripIt(object):
         response = self._do_request('/oauth/access_token')
 
         if self.http_code == 200:
-            return _parse_qs(response)
+            return dict(urllib.parse.parse_qsl(response))
         else:
             return response
 
 # } class:TripIt
-
-def _parse_qs(qs):
-    request_params = {}
-    for param in qs.split('&'):
-        (request_param, request_param_value) = param.split('=')
-        request_params[request_param] = request_param_value
-
-    return request_params
 
 def _xml_to_py(data):
     parser = xml.sax.make_parser()
