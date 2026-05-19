@@ -33,6 +33,7 @@ from tripit.models.points import PointsProgram
 from tripit.models.profile import Profile
 from tripit.models.trip import Trip
 from tripit.pagination import paginate
+from tripit.serialize import model_to_request_xml
 from tripit.transport import DEFAULT_API_URL, _Transport
 
 ObjectTypeName = Literal[
@@ -223,6 +224,204 @@ class TripIt:
 
     def get_parking(self, parking_id: str) -> ParkingObject:
         return self._get_single("parking", parking_id, "parking_objects")
+
+    # ----- Writes (create / replace / delete) -----
+
+    def _create(self, tag: str, model: Any, pluck: str) -> Any:
+        """POST /v1/create with the serialized model. Returns the created object."""
+        xml = model_to_request_xml(tag, model)
+        envelope = self._transport.request_json("POST", "/v1/create", data={"xml": xml})
+        items = getattr(envelope, pluck)
+        if not items:
+            raise TripItNotFoundError(f"Created {tag} not echoed back in response", status_code=200)
+        return items[0]
+
+    def _replace(self, entity: str, tag: str, object_id: str, model: Any, pluck: str) -> Any:
+        """POST /v1/replace/<entity> with id and serialized model."""
+        xml = model_to_request_xml(tag, model)
+        envelope = self._transport.request_json(
+            "POST", f"/v1/replace/{entity}", data={"id": str(object_id), "xml": xml}
+        )
+        items = getattr(envelope, pluck)
+        if not items:
+            raise TripItNotFoundError(
+                f"Replaced {entity} {object_id} not echoed back", status_code=200
+            )
+        return items[0]
+
+    def _delete(self, entity: str, object_id: str) -> None:
+        self._transport.request_json("POST", f"/v1/delete/{entity}", data={"id": str(object_id)})
+
+    # Trip
+    def create_trip(self, trip: Trip) -> Trip:
+        return self._create("Trip", trip, "trips")
+
+    def replace_trip(self, trip_id: str, trip: Trip) -> Trip:
+        return self._replace("trip", "Trip", trip_id, trip, "trips")
+
+    def delete_trip(self, trip_id: str) -> None:
+        self._delete("trip", trip_id)
+
+    # Air
+    def create_air(self, air: AirObject) -> AirObject:
+        return self._create("AirObject", air, "air_objects")
+
+    def replace_air(self, segment_id: str, air: AirObject) -> AirObject:
+        return self._replace("air", "AirObject", segment_id, air, "air_objects")
+
+    def delete_air(self, segment_id: str) -> None:
+        self._delete("air", segment_id)
+
+    # Lodging
+    def create_lodging(self, lodging: LodgingObject) -> LodgingObject:
+        return self._create("LodgingObject", lodging, "lodging_objects")
+
+    def replace_lodging(self, lodging_id: str, lodging: LodgingObject) -> LodgingObject:
+        return self._replace("lodging", "LodgingObject", lodging_id, lodging, "lodging_objects")
+
+    def delete_lodging(self, lodging_id: str) -> None:
+        self._delete("lodging", lodging_id)
+
+    # Car
+    def create_car(self, car: CarObject) -> CarObject:
+        return self._create("CarObject", car, "car_objects")
+
+    def replace_car(self, car_id: str, car: CarObject) -> CarObject:
+        return self._replace("car", "CarObject", car_id, car, "car_objects")
+
+    def delete_car(self, car_id: str) -> None:
+        self._delete("car", car_id)
+
+    # Rail
+    def create_rail(self, rail: RailObject) -> RailObject:
+        return self._create("RailObject", rail, "rail_objects")
+
+    def replace_rail(self, rail_id: str, rail: RailObject) -> RailObject:
+        return self._replace("rail", "RailObject", rail_id, rail, "rail_objects")
+
+    def delete_rail(self, rail_id: str) -> None:
+        self._delete("rail", rail_id)
+
+    # Transport
+    def create_transport(self, transport: TransportObject) -> TransportObject:
+        return self._create("TransportObject", transport, "transport_objects")
+
+    def replace_transport(self, transport_id: str, transport: TransportObject) -> TransportObject:
+        return self._replace(
+            "transport", "TransportObject", transport_id, transport, "transport_objects"
+        )
+
+    def delete_transport(self, transport_id: str) -> None:
+        self._delete("transport", transport_id)
+
+    # Cruise
+    def create_cruise(self, cruise: CruiseObject) -> CruiseObject:
+        return self._create("CruiseObject", cruise, "cruise_objects")
+
+    def replace_cruise(self, cruise_id: str, cruise: CruiseObject) -> CruiseObject:
+        return self._replace("cruise", "CruiseObject", cruise_id, cruise, "cruise_objects")
+
+    def delete_cruise(self, cruise_id: str) -> None:
+        self._delete("cruise", cruise_id)
+
+    # Restaurant
+    def create_restaurant(self, restaurant: RestaurantObject) -> RestaurantObject:
+        return self._create("RestaurantObject", restaurant, "restaurant_objects")
+
+    def replace_restaurant(
+        self, restaurant_id: str, restaurant: RestaurantObject
+    ) -> RestaurantObject:
+        return self._replace(
+            "restaurant",
+            "RestaurantObject",
+            restaurant_id,
+            restaurant,
+            "restaurant_objects",
+        )
+
+    def delete_restaurant(self, restaurant_id: str) -> None:
+        self._delete("restaurant", restaurant_id)
+
+    # Activity
+    def create_activity(self, activity: ActivityObject) -> ActivityObject:
+        return self._create("ActivityObject", activity, "activity_objects")
+
+    def replace_activity(self, activity_id: str, activity: ActivityObject) -> ActivityObject:
+        return self._replace(
+            "activity", "ActivityObject", activity_id, activity, "activity_objects"
+        )
+
+    def delete_activity(self, activity_id: str) -> None:
+        self._delete("activity", activity_id)
+
+    # Note
+    def create_note(self, note: NoteObject) -> NoteObject:
+        return self._create("NoteObject", note, "note_objects")
+
+    def replace_note(self, note_id: str, note: NoteObject) -> NoteObject:
+        return self._replace("note", "NoteObject", note_id, note, "note_objects")
+
+    def delete_note(self, note_id: str) -> None:
+        self._delete("note", note_id)
+
+    # Map
+    def create_map(self, map_: MapObject) -> MapObject:
+        return self._create("MapObject", map_, "map_objects")
+
+    def replace_map(self, map_id: str, map_: MapObject) -> MapObject:
+        return self._replace("map", "MapObject", map_id, map_, "map_objects")
+
+    def delete_map(self, map_id: str) -> None:
+        self._delete("map", map_id)
+
+    # Directions
+    def create_directions(self, directions: DirectionsObject) -> DirectionsObject:
+        return self._create("DirectionsObject", directions, "directions_objects")
+
+    def replace_directions(
+        self, directions_id: str, directions: DirectionsObject
+    ) -> DirectionsObject:
+        return self._replace(
+            "directions",
+            "DirectionsObject",
+            directions_id,
+            directions,
+            "directions_objects",
+        )
+
+    def delete_directions(self, directions_id: str) -> None:
+        self._delete("directions", directions_id)
+
+    # Parking
+    def create_parking(self, parking: ParkingObject) -> ParkingObject:
+        return self._create("ParkingObject", parking, "parking_objects")
+
+    def replace_parking(self, parking_id: str, parking: ParkingObject) -> ParkingObject:
+        return self._replace("parking", "ParkingObject", parking_id, parking, "parking_objects")
+
+    def delete_parking(self, parking_id: str) -> None:
+        self._delete("parking", parking_id)
+
+    # CRS — partner-agency bulk operations
+    def crs_load_reservations(self, xml_payload: str, *, company_key: str | None = None) -> Any:
+        """Submit a CRS reservation payload (caller supplies pre-built XML).
+
+        CRS loads are typically too large/specialised for a single typed
+        wrapper. Accept the XML string the caller has already produced.
+        Returns the raw Response envelope so callers can inspect any returned
+        objects.
+        """
+        data: dict[str, str] = {"xml": xml_payload}
+        if company_key is not None:
+            data["company_key"] = company_key
+        return self._transport.request_json("POST", "/v1/crsLoadReservations", data=data)
+
+    def crs_delete_reservations(self, record_locator: str) -> None:
+        self._transport.request_json(
+            "POST",
+            "/v1/crsDeleteReservations",
+            data={"record_locator": record_locator},
+        )
 
     # ----- list/object multi-type read -----
 
