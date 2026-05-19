@@ -56,6 +56,41 @@ def test_profile_parses_with_email_addresses() -> None:
     assert addrs[0].is_auto_import is True
 
 
+def test_profile_lifts_at_attributes_ref() -> None:
+    """TripIt's JSON encoding represents XML attributes as a nested dict.
+
+    `Profile.ref` (declared as XML attribute `ref` in the XSD) arrives as
+    `{"@attributes": {"ref": "..."}}` in the JSON payload. The model must
+    lift that into the canonical `ref` field.
+    """
+    from tripit.models.profile import Profile
+
+    payload = {
+        "@attributes": {"ref": "ryZ03lKSXLWI67EaT_EdRA"},
+        "is_client": "true",
+        "screen_name": "test",
+    }
+    profile = Profile.model_validate(payload)
+    assert profile.ref == "ryZ03lKSXLWI67EaT_EdRA"
+    assert profile.is_client is True
+    assert profile.screen_name == "test"
+
+
+def test_profile_accepts_plain_ref_field() -> None:
+    """Round-tripping via model_dump emits `ref` directly; must re-parse."""
+    from tripit.models.profile import Profile
+
+    profile = Profile.model_validate({"ref": "abc", "screen_name": "s"})
+    assert profile.ref == "abc"
+
+
+def test_profile_handles_missing_attributes_gracefully() -> None:
+    from tripit.models.profile import Profile
+
+    profile = Profile.model_validate({"screen_name": "s"})
+    assert profile.ref is None
+
+
 def test_points_programs_list_parses_with_string_ids() -> None:
     envelope = Response.model_validate(_load("list_points_program.json"))
     assert len(envelope.points_programs) == 2

@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime as _dt
 from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from tripit.models._base import TripItBool, TripItId, TripItModel
 
@@ -110,8 +110,23 @@ class BillingPeriods(TripItModel):
 class Profile(TripItModel):
     """A TripIt user profile."""
 
-    # `ref` is an XML attribute on Profile; some serializers expose it as @attributes.
-    ref: str | None = Field(default=None, alias="@attributes")
+    # The XSD declares `ref` as an XML attribute on the Profile element. TripIt's
+    # JSON encoding emits attributes as a nested `@attributes` dict like
+    # `{"@attributes": {"ref": "..."}}`. A `model_validator` flattens that into
+    # the plain `ref` field below before standard parsing runs.
+    ref: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _lift_attributes_ref(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            attrs = data.get("@attributes")
+            if isinstance(attrs, dict) and "ref" in attrs:
+                # Don't mutate the caller's dict.
+                merged = {k: v for k, v in data.items() if k != "@attributes"}
+                merged.setdefault("ref", attrs["ref"])
+                return merged
+        return data
 
     profile_email_addresses: ProfileEmailAddresses | None = Field(
         default=None, alias="ProfileEmailAddresses"
