@@ -21,10 +21,3 @@ real captured fixtures surface fields not in the schemas (e.g. `Emissions`,
 
 TripIt's published API documentation lives at
 <https://tripit.github.io/api/doc/v1/>.
-
-## Migration
-
-- `migration-from-0.x.md` — moving from the legacy 0.x API surface
-  (`OAuthConsumerCredential`, `TravelObj`, XML SAX parsing) to the modern
-  client. Note: 2.0.0 made one more breaking change beyond 1.0 →
-  `NotificationSetting` field set was rewritten after seeing real responses.

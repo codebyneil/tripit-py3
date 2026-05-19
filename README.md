@@ -9,10 +9,6 @@ Modern Python 3 client for the TripIt v1 API. Synchronous, typed, robust.
 > The client supports the full 1.0a callback + verifier round-trip plus a
 > bundled localhost-listener helper. Several model fields were corrected
 > against real API captures (notably `NotificationSetting` was rewritten).
->
-> v1.0.0 was a complete rewrite of the original 0.x client. See
-> [`docs/migration-from-0.x.md`](docs/migration-from-0.x.md) for the 0.x → 1.x
-> mapping.
 
 ## Highlights
 
