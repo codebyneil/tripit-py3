@@ -163,7 +163,14 @@ def ensure_access_token(
 
     # Localhost listener flow — open the URL, block on the callback.
     if listen_port is not None and effective_callback and "127.0.0.1" in effective_callback:
-        auth_url = authorization_url(request_token.oauth_token, web_url=web_url)
+        # Include oauth_callback on the authorize URL too — tripper's working
+        # Next.js implementation does this and TripIt seemingly requires it,
+        # even though their docs say it's optional once registered.
+        auth_url = authorization_url(
+            request_token.oauth_token,
+            callback_url=effective_callback,
+            web_url=web_url,
+        )
         logger.info(
             "Opening authorize URL in browser; listening on port %d...",
             listen_port,
@@ -214,5 +221,9 @@ def ensure_access_token(
         request_token=request_token.oauth_token,
         request_token_secret=request_token.oauth_token_secret,
     )
-    auth_url = authorization_url(request_token.oauth_token, web_url=web_url)
+    auth_url = authorization_url(
+        request_token.oauth_token,
+        callback_url=effective_callback,
+        web_url=web_url,
+    )
     raise OAuthApprovalRequired(auth_url, reason="fresh approval required")
