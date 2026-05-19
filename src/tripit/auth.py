@@ -166,8 +166,12 @@ def _exchange_token(
         token=token,
         token_secret=token_secret,
     )
+    # Per https://tripit.github.io/api/doc/v1/#authentication the request-token
+    # and access-token endpoints are POST. (Some servers happen to accept GET
+    # too, but the issued tokens may be flagged differently downstream — the
+    # browser-facing /oauth/authorize page rejects RTs minted that way.)
     with httpx.Client(timeout=30.0) as client:
-        response = client.get(f"{api_url}{path}", auth=auth)
+        response = client.post(f"{api_url}{path}", auth=auth)
     if response.status_code != 200:
         from tripit.exceptions import TripItAuthError
 

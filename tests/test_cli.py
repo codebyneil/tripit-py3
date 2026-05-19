@@ -30,10 +30,10 @@ def test_authorize_happy_path_prints_access_token(
     # Simulate the user pressing Enter at the wait prompt.
     monkeypatch.setattr(sys, "stdin", io.StringIO("\n"))
 
-    respx.get("https://api.tripit.com/oauth/request_token").mock(
+    respx.post("https://api.tripit.com/oauth/request_token").mock(
         return_value=httpx.Response(200, text="oauth_token=rt-1&oauth_token_secret=rs-1")
     )
-    respx.get("https://api.tripit.com/oauth/access_token").mock(
+    respx.post("https://api.tripit.com/oauth/access_token").mock(
         return_value=httpx.Response(200, text="oauth_token=at-2&oauth_token_secret=as-2")
     )
 
@@ -53,7 +53,7 @@ def test_authorize_propagates_failure_as_nonzero_exit(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(sys, "stdin", io.StringIO("\n"))
-    respx.get("https://api.tripit.com/oauth/request_token").mock(
+    respx.post("https://api.tripit.com/oauth/request_token").mock(
         return_value=httpx.Response(401, text="bad signature")
     )
 
