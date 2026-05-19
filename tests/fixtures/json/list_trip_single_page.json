@@ -1,0 +1,39 @@
+{
+  "Response": {
+    "timestamp": 1700000000,
+    "num_bytes": 1024,
+    "page_num": 1,
+    "page_size": 25,
+    "max_page": 1,
+    "Trip": [
+      {
+        "id": "999000111222",
+        "uuid": "11111111-2222-3333-4444-555555555555",
+        "relative_url": "/trip/show/id/999000111222",
+        "start_date": "2026-05-01",
+        "end_date": "2026-05-05",
+        "display_name": "Tokyo Vacation",
+        "image_url": "https://www.tripit.com/img/tokyo.jpg",
+        "is_private": "false",
+        "primary_location": "Tokyo, Japan",
+        "PrimaryLocationAddress": {
+          "city": "Tokyo",
+          "country": "JP",
+          "latitude": "35.6762",
+          "longitude": "139.6503"
+        },
+        "is_expensible": "false",
+        "is_pro_enabled": "true",
+        "last_modified": 1700000050,
+        "is_owner_traveler": "true"
+      },
+      {
+        "id": "999000111223",
+        "start_date": "2026-06-10",
+        "end_date": "2026-06-15",
+        "display_name": "Paris Conference",
+        "primary_location": "Paris, France"
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "Response": {
+    "timestamp": 1700000000,
+    "num_bytes": 512,
+    "Trip": {
+      "id": 999000111222,
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-05",
+      "display_name": "Tokyo Vacation",
+      "primary_location": "Tokyo, Japan",
+      "is_private": "false"
+    }
+  }
+}
