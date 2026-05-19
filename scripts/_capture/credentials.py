@@ -1,21 +1,24 @@
-"""Credentials loading and access-token persistence for fixture capture.
+"""User credentials loader — reads from `tripit_creds.json` (and env fallbacks).
 
-The capture script needs four secrets up front (consumer key, consumer secret,
-TripIt username, TripIt password) plus two cached values it writes itself
-after the OAuth dance (access token + access token secret).
+The script never writes to this file. Token caching lives in `tokens.py`.
 
-Resolution order for each input field:
-  1. Value present in `.tripit-creds.json` (preferred — set chmod 0600)
-  2. Corresponding TRIPIT_* environment variable
-  3. Raise — missing required field.
+Resolution order for each required field (consumer key + secret + username +
+password):
+  1. Value present in `tripit_creds.json` (either canonical name like
+     `consumer_key` or compact alias like `api_key`).
+  2. Corresponding TRIPIT_* environment variable.
+  3. Raise `MissingCredentialsError`.
+
+Any extra keys in `tripit_creds.json` — including legacy `access_token` /
+`pending_request_token` fields a buggy earlier version of this script may
+have written — are silently ignored.
 """
 
 from __future__ import annotations
 
 import json
 import os
-import stat
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
 
 CREDS_PATH = Path("tripit_creds.json")
@@ -27,26 +30,18 @@ _ENV_NAMES = {
     "consumer_secret": "TRIPIT_CONSUMER_SECRET",
     "username": "TRIPIT_USERNAME",
     "password": "TRIPIT_PASSWORD",
-    "access_token": "TRIPIT_ACCESS_TOKEN",
-    "access_token_secret": "TRIPIT_ACCESS_TOKEN_SECRET",
 }
 
-# Map compact / alternative file keys onto our canonical field names so the
-# user can write whichever form feels natural in `tripit_creds.json`.
+# Accept compact alternative field names in the JSON file.
 _FILE_KEY_ALIASES = {
     "api_key": "consumer_key",
     "api_secret": "consumer_secret",
     "user": "username",
     "pass": "password",
-    # Canonical names also pass through unchanged.
     "consumer_key": "consumer_key",
     "consumer_secret": "consumer_secret",
     "username": "username",
     "password": "password",
-    "access_token": "access_token",
-    "access_token_secret": "access_token_secret",
-    "pending_request_token": "pending_request_token",
-    "pending_request_token_secret": "pending_request_token_secret",
 }
 
 
@@ -56,13 +51,6 @@ class Credentials:
     consumer_secret: str
     username: str
     password: str
-    access_token: str | None = None
-    access_token_secret: str | None = None
-    # Cached between the two halves of the 3-legged OAuth dance: step 1 stores
-    # the request token here so step 2 can pick it up after the user has
-    # approved in their browser.
-    pending_request_token: str | None = None
-    pending_request_token_secret: str | None = None
 
 
 class MissingCredentialsError(RuntimeError):
@@ -70,34 +58,18 @@ class MissingCredentialsError(RuntimeError):
 
 
 def load_credentials(path: Path = CREDS_PATH) -> Credentials:
-    """Resolve credentials from `path` (JSON) with env-var fallbacks.
-
-    The JSON file may use either canonical names (`consumer_key`, `username`,
-    `password`, `consumer_secret`) or compact aliases (`api_key`, `api_secret`,
-    `user`, `pass`). Raises `MissingCredentialsError` listing every
-    required-but-missing field so the user sees the whole problem at once.
-    """
+    """Resolve credentials from `path` with env-var fallback."""
     file_data: dict[str, str] = {}
     if path.exists():
         raw = json.loads(path.read_text())
-        # Normalize aliases → canonical names.
         for key, value in raw.items():
             canonical = _FILE_KEY_ALIASES.get(key)
-            if canonical:
+            if canonical and isinstance(value, str):
                 file_data[canonical] = value
 
     resolved: dict[str, str | None] = {}
-    cached_fields = (
-        "access_token",
-        "access_token_secret",
-        "pending_request_token",
-        "pending_request_token_secret",
-    )
-    for field in (*_REQUIRED_FIELDS, *cached_fields):
-        env_var = _ENV_NAMES.get(field)
-        value = file_data.get(field)
-        if not value and env_var is not None:
-            value = os.environ.get(env_var)
+    for field in _REQUIRED_FIELDS:
+        value = file_data.get(field) or os.environ.get(_ENV_NAMES[field])
         resolved[field] = value or None
 
     missing = [f for f in _REQUIRED_FIELDS if not resolved[f]]
@@ -115,49 +87,4 @@ def load_credentials(path: Path = CREDS_PATH) -> Credentials:
         consumer_secret=resolved["consumer_secret"] or "",
         username=resolved["username"] or "",
         password=resolved["password"] or "",
-        access_token=resolved["access_token"],
-        access_token_secret=resolved["access_token_secret"],
-        pending_request_token=resolved["pending_request_token"],
-        pending_request_token_secret=resolved["pending_request_token_secret"],
     )
-
-
-def save_access_token(
-    creds: Credentials,
-    *,
-    access_token: str,
-    access_token_secret: str,
-    path: Path = CREDS_PATH,
-) -> Credentials:
-    """Persist the access token + clear any pending request token (chmod 0600)."""
-    updated = replace(
-        creds,
-        access_token=access_token,
-        access_token_secret=access_token_secret,
-        pending_request_token=None,
-        pending_request_token_secret=None,
-    )
-    _write_creds(path, updated)
-    return updated
-
-
-def save_pending_request_token(
-    creds: Credentials,
-    *,
-    request_token: str,
-    request_token_secret: str,
-    path: Path = CREDS_PATH,
-) -> Credentials:
-    """Stash a request token between steps 1 and 2 of the OAuth dance."""
-    updated = replace(
-        creds,
-        pending_request_token=request_token,
-        pending_request_token_secret=request_token_secret,
-    )
-    _write_creds(path, updated)
-    return updated
-
-
-def _write_creds(path: Path, creds: Credentials) -> None:
-    path.write_text(json.dumps(asdict(creds), indent=2) + "\n")
-    path.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0600

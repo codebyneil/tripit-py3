@@ -36,6 +36,7 @@ from scripts._capture.oauth_setup import (  # noqa: E402
     ensure_access_token,
 )
 from scripts._capture.scrub import scrub  # noqa: E402
+from scripts._capture.tokens import clear_tokens, load_tokens  # noqa: E402
 from tripit import TripIt  # noqa: E402
 
 FIXTURES_DIR = Path("tests/fixtures/json")
@@ -86,11 +87,13 @@ def main(argv: list[str] | None = None) -> int:
         log.error("%s", exc)
         return 1
 
+    tokens = clear_tokens() if args.refresh_oauth else load_tokens()
+
     try:
-        creds, _ = ensure_access_token(creds, force=args.refresh_oauth)
+        tokens, _ = ensure_access_token(creds, tokens, force=args.refresh_oauth)
     except OAuthApprovalRequired as need:
-        # Phase 1: print friendly instructions on stdout, exit 0 so the user
-        # can clearly see what to do next.
+        # Print friendly instructions on stdout, exit 0 so the user can
+        # clearly see what to do next.
         sys.stdout.write(
             "\n"
             "OAuth approval required — TripIt's Akamai bot detection blocks\n"
@@ -99,9 +102,12 @@ def main(argv: list[str] | None = None) -> int:
             "  2. Click 'Approve' on the TripIt page.\n"
             "  3. Re-run this command. The script will exchange the\n"
             "     approved request token for an access token and capture.\n\n"
-            "The request token has been saved to tripit_creds.json — you\n"
-            "don't need to keep this terminal open.\n"
+            "The request token is saved in tripit_tokens.json. The URL above\n"
+            "is reused on subsequent runs until you approve it — so if you\n"
+            "lose the URL, just re-run and you'll see it again.\n"
         )
+        if need.reason != "fresh approval required":
+            sys.stdout.write(f"\n(reason: {need.reason})\n")
         return 0
     except Exception as exc:
         log.error("OAuth handshake failed: %s", exc)
@@ -114,8 +120,8 @@ def main(argv: list[str] | None = None) -> int:
     with TripIt(
         consumer_key=creds.consumer_key,
         consumer_secret=creds.consumer_secret,
-        token=creds.access_token or "",
-        token_secret=creds.access_token_secret or "",
+        token=tokens.access_token or "",
+        token_secret=tokens.access_token_secret or "",
     ) as client:
         log.info("Running discovery pass...")
         disc = discovery_pass(client)

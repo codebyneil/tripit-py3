@@ -163,4 +163,5 @@ cython_debug/
 # Local creds and unscrubbed captures — NEVER commit.
 tripit_creds.json
 .tripit-creds.json
+tripit_tokens.json
 tests/fixtures/raw/
