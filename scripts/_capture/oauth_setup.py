@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 
 from scripts._capture.credentials import Credentials, save_access_token
+from scripts._capture.programmatic_login import approve_request_token
 from tripit.auth import (
     AccessToken,
     authorization_url,
@@ -50,9 +51,13 @@ def ensure_access_token(
     logger.info("Fetching request token...")
     request_token = get_request_token(creds.consumer_key, creds.consumer_secret, api_url=api_url)
 
-    auth_url = authorization_url(request_token.oauth_token, web_url=web_url)
-    logger.info("Awaiting user approval in browser...")
-    wait_for_manual_approval(auth_url)
+    logger.info("Attempting programmatic OAuth approval...")
+    if approve_request_token(creds, request_token.oauth_token, web_url=web_url):
+        logger.info("Programmatic approval succeeded")
+    else:
+        logger.info("Programmatic approval failed — falling back to manual")
+        auth_url = authorization_url(request_token.oauth_token, web_url=web_url)
+        wait_for_manual_approval(auth_url)
 
     logger.info("Exchanging for access token...")
     access_token = get_access_token(

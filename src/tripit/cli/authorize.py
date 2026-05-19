@@ -46,14 +46,29 @@ def wait_for_manual_approval(
     fallback. Writes prompts to `out` (default stderr) so stdout stays clean
     for piped consumers; reads a single line from `stdin` (default sys.stdin)
     to detect the approval keypress.
+
+    Raises `RuntimeError` if stdin is closed / EOF before the user types
+    anything — otherwise we'd silently exchange an unauthorized request
+    token and get a cryptic downstream error.
     """
     out = out if out is not None else sys.stderr
     stdin = stdin if stdin is not None else sys.stdin
+    if not stdin.isatty() if hasattr(stdin, "isatty") else False:
+        # Not a TTY — most likely running non-interactively (cron, pipe).
+        # We still attempt readline; the EOF check below catches it.
+        pass
     out.write("\nOpen this URL in a browser and approve access:\n\n")
     out.write(f"  {auth_url}\n\n")
     out.write("After approving, press Enter to continue...")
     out.flush()
-    stdin.readline()
+    line = stdin.readline()
+    if line == "":
+        # readline returned empty string — stdin was closed without input.
+        raise RuntimeError(
+            "Manual OAuth approval aborted: stdin closed before user input. "
+            "Run the script in a terminal where you can press Enter after "
+            "approving the URL in your browser."
+        )
 
 
 def main(argv: list[str] | None = None) -> int:
