@@ -1,0 +1,545 @@
+{
+  "Profile": {
+    "@attributes": {
+      "ref": "ryZ03lKSXLWI67EaT_EdRA"
+    },
+    "NotificationSettings": {
+      "NotificationSetting": [
+        {
+          "code": "EH",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInCheckInEmail",
+          "type": "email"
+        },
+        {
+          "code": "ED",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInDepartEmail",
+          "type": "email"
+        },
+        {
+          "code": "EA",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInArriveEmail",
+          "type": "email"
+        },
+        {
+          "code": "EC",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInCancelEmail",
+          "type": "email"
+        },
+        {
+          "code": "EP",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInPriceMonEmail",
+          "type": "email"
+        },
+        {
+          "code": "ES",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInSeatAlertEmail",
+          "type": "email"
+        },
+        {
+          "code": "EE",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInSchedChgEmail",
+          "type": "email"
+        },
+        {
+          "code": "EI",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInImportsEmail",
+          "type": "email"
+        },
+        {
+          "code": "ET",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInPretripEmail",
+          "type": "email"
+        },
+        {
+          "code": "EN",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInInvsNotifsEmail",
+          "type": "email"
+        },
+        {
+          "code": "EL",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyExpireAlertEmail",
+          "type": "email"
+        },
+        {
+          "code": "EO",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInAirportMapAlertEmail",
+          "type": "email"
+        },
+        {
+          "code": "ER",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInPassportRenewalReminderEmail",
+          "type": "email"
+        },
+        {
+          "code": "EY",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyActivityUpdatedEmail",
+          "type": "email"
+        },
+        {
+          "code": "EU",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptedInUpdates",
+          "type": "email"
+        },
+        {
+          "code": "EV",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptedInSurveys",
+          "type": "email"
+        },
+        {
+          "code": "PH",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCheckInPush",
+          "type": "push"
+        },
+        {
+          "code": "PD",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInDepartPush",
+          "type": "push"
+        },
+        {
+          "code": "PA",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInArrivePush",
+          "type": "push"
+        },
+        {
+          "code": "PC",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCancelPush",
+          "type": "push"
+        },
+        {
+          "code": "PP",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInPriceMonPush",
+          "type": "push"
+        },
+        {
+          "code": "PS",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInSeatAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PE",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInSchedChgPush",
+          "type": "push"
+        },
+        {
+          "code": "PI",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInImportsPush",
+          "type": "push"
+        },
+        {
+          "code": "PT",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInPretripPush",
+          "type": "push"
+        },
+        {
+          "code": "PN",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInInvsNotifsPush",
+          "type": "push"
+        },
+        {
+          "code": "PL",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyExpireAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PU",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInProductUpdateOffersPush",
+          "type": "push"
+        },
+        {
+          "code": "PW",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInGoNowPush",
+          "type": "push"
+        },
+        {
+          "code": "PM",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInTermGateInfoPush",
+          "type": "push"
+        },
+        {
+          "code": "PR",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInTermGateReminderPush",
+          "type": "push"
+        },
+        {
+          "code": "PO",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInAirportMapAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PQ",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyAttentionAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PK",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInRiskAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PF",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInIncomingPlaneTrackingPush",
+          "type": "push"
+        },
+        {
+          "code": "SH",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCheckInSms",
+          "type": "sms"
+        },
+        {
+          "code": "SD",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInDepartSms",
+          "type": "sms"
+        },
+        {
+          "code": "SA",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInArriveSms",
+          "type": "sms"
+        },
+        {
+          "code": "SC",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCancelSms",
+          "type": "sms"
+        },
+        {
+          "code": "SP",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInPriceMonSms",
+          "type": "sms"
+        },
+        {
+          "code": "SS",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInSeatAlertSms",
+          "type": "sms"
+        },
+        {
+          "code": "SL",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyExpireAlertSms",
+          "type": "sms"
+        }
+      ]
+    },
+    "ProfileEmailAddresses": {
+      "ProfileEmailAddress": [
+        {
+          "address": "538866b0@example.invalid",
+          "email_ref": "BzLX6bIX-aP3BNJOYwoYYA",
+          "import_trip_plan_sharing": "concur_sharing_none",
+          "is_auto_import": "false",
+          "is_auto_inbox_eligible": "true",
+          "is_confirmed": "true",
+          "is_primary": "true",
+          "uuid": "7dd5f60c-63f9-40b8-bb84-a21c27dc70c9",
+          "uuid_ref": "WXp4SidfzP9c9XmDJ3SH2sWrUXb0LsblfhcQD94XX+k="
+        },
+        {
+          "address": "cc12941f@example.invalid",
+          "email_ref": "71TM1vHGzWcE3X-ppdphBg",
+          "import_trip_plan_sharing": "concur_sharing_none",
+          "is_auto_import": "false",
+          "is_auto_inbox_eligible": "true",
+          "is_confirmed": "true",
+          "is_primary": "false",
+          "uuid": "f386afda-e0b3-43fc-911f-309f48fc3dbb",
+          "uuid_ref": "GBLKNq8VJc2oagD6W6E0JgN+fCJuTpTYSLdEvFQdsL0="
+        }
+      ]
+    },
+    "UserSettings": {
+      "AiImport": {
+        "introduced_feature_mobile_ts": "0",
+        "introduced_feature_webapp_ts": "0",
+        "is_opt_in_read_only": "true",
+        "is_opt_in_visible": "false",
+        "is_opted_in": "false",
+        "opted_in_ts": "0"
+      },
+      "AppleFoundationModel": {
+        "is_opted_in": "true"
+      }
+    },
+    "date_endian_format": "M",
+    "date_of_birth": "1987-07-01",
+    "distance": "M",
+    "first_name": "Person fafe16c1",
+    "home_city": "Los Angeles, CA",
+    "home_country_code": "US",
+    "hour_clock": "1",
+    "ical_url": "https://www.tripit.com/feed/ical/private/BF4D8878-45B508F1BEF17919E957AAC5191F8118/tripit.ics",
+    "is_cal_detailed": "true",
+    "is_cal_including_notes": "false",
+    "is_cal_including_sensitive_info": "false",
+    "is_cal_localtime": "true",
+    "is_client": "true",
+    "is_pro": "false",
+    "is_public_trip_sharing_disabled": "false",
+    "language_tag": "en-US",
+    "last_name": "Person 17255d50",
+    "profile_url": "people/neil7140",
+    "public_display_name": "Person 13e030bd",
+    "screen_name": "Person b3b64473",
+    "should_auto_import": "true",
+    "temperature": "F",
+    "uuid": "f8e08600-ce86-5137-da94-f494d14eeffc"
+  },
+  "Trip": [
+    {
+      "PrimaryLocationAddress": {
+        "address": "Brussels, Belgium",
+        "city": "Brussels",
+        "country": "BE",
+        "latitude": "50.850450",
+        "longitude": "4.348780",
+        "state": "Brussels Capital"
+      },
+      "TripInvitees": {
+        "Invitee": {
+          "@attributes": {
+            "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+          },
+          "is_owner": "true",
+          "is_read_only": "false",
+          "is_traveler": "true"
+        }
+      },
+      "TripPurposes": {
+        "is_auto_generated": "false",
+        "purpose_type_code": "L"
+      },
+      "display_name": "Another Trip",
+      "end_date": "2025-08-06",
+      "id": "368545721",
+      "image_url": "https://www.tripit.com/images/places/be/brussels.jpg",
+      "is_private": "false",
+      "is_trip_owner_inner_circle_sharer": "false",
+      "last_modified": "1752793536",
+      "primary_location": "Brussels, Belgium",
+      "relative_url": "/trip/show/id/368545721",
+      "start_date": "2025-07-24"
+    },
+    {
+      "PrimaryLocationAddress": {
+        "address": "Los Angeles, CA",
+        "city": "Los Angeles",
+        "country": "US",
+        "latitude": "34.052230",
+        "longitude": "-118.243680",
+        "state": "CA"
+      },
+      "TripInvitees": {
+        "Invitee": {
+          "@attributes": {
+            "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+          },
+          "is_owner": "true",
+          "is_read_only": "false",
+          "is_traveler": "true"
+        }
+      },
+      "TripPurposes": {
+        "is_auto_generated": "false",
+        "purpose_type_code": "L"
+      },
+      "display_name": "Current Trip",
+      "end_date": "2024-05-01",
+      "id": "347677302",
+      "image_url": "https://www.tripit.com/images/places/us/ca/losangeles.jpg",
+      "is_private": "false",
+      "is_trip_owner_inner_circle_sharer": "false",
+      "last_modified": "1712201600",
+      "primary_location": "Los Angeles, CA",
+      "relative_url": "/trip/show/id/347677302",
+      "start_date": "2024-03-01"
+    },
+    {
+      "PrimaryLocationAddress": {
+        "address": "Barcelona, Spain",
+        "city": "Barcelona",
+        "country": "ES",
+        "latitude": "41.388790",
+        "longitude": "2.158990",
+        "state": "Catalonia"
+      },
+      "TripInvitees": {
+        "Invitee": {
+          "@attributes": {
+            "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+          },
+          "is_owner": "true",
+          "is_read_only": "false",
+          "is_traveler": "true"
+        }
+      },
+      "TripPurposes": {
+        "is_auto_generated": "false",
+        "purpose_type_code": "L"
+      },
+      "display_name": "Upcoming Trip 2",
+      "end_date": "2024-11-30",
+      "id": "347634444",
+      "image_url": "https://www.tripit.com/images/places/es/barcelona.jpg",
+      "is_private": "false",
+      "is_trip_owner_inner_circle_sharer": "false",
+      "last_modified": "1712202802",
+      "primary_location": "Barcelona, Spain",
+      "relative_url": "/trip/show/id/347634444",
+      "start_date": "2024-11-10"
+    },
+    {
+      "PrimaryLocationAddress": {
+        "address": "Mexico City, Mexico",
+        "city": "Mexico City",
+        "country": "MX",
+        "latitude": "19.428470",
+        "longitude": "-99.127660",
+        "state": "Mexico City"
+      },
+      "TripInvitees": {
+        "Invitee": {
+          "@attributes": {
+            "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+          },
+          "is_owner": "true",
+          "is_read_only": "false",
+          "is_traveler": "true"
+        }
+      },
+      "TripPurposes": {
+        "is_auto_generated": "false",
+        "purpose_type_code": "L"
+      },
+      "display_name": "Upcoming Trip 1",
+      "end_date": "2024-09-28",
+      "id": "347634394",
+      "image_url": "https://www.tripit.com/images/places/mx/mexicocity.jpg",
+      "is_private": "false",
+      "is_trip_owner_inner_circle_sharer": "false",
+      "last_modified": "1712153867",
+      "primary_location": "Mexico City, Mexico",
+      "relative_url": "/trip/show/id/347634394",
+      "start_date": "2024-09-25"
+    },
+    {
+      "PrimaryLocationAddress": {
+        "address": "Copenhagen, Denmark",
+        "city": "Copenhagen",
+        "country": "DK",
+        "latitude": "55.675940",
+        "longitude": "12.565530",
+        "state": "Capital Region"
+      },
+      "TripInvitees": {
+        "Invitee": {
+          "@attributes": {
+            "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+          },
+          "is_owner": "true",
+          "is_read_only": "false",
+          "is_traveler": "true"
+        }
+      },
+      "TripPurposes": {
+        "is_auto_generated": "false",
+        "purpose_type_code": "L"
+      },
+      "display_name": "Test Trip 1",
+      "end_date": "2024-03-14",
+      "id": "347437788",
+      "image_url": "https://www.tripit.com/images/places/dk/copenhagen.jpg",
+      "is_private": "false",
+      "is_trip_owner_inner_circle_sharer": "false",
+      "last_modified": "1711772810",
+      "primary_location": "Copenhagen, Denmark",
+      "relative_url": "/trip/show/id/347437788",
+      "start_date": "2024-03-03"
+    }
+  ],
+  "max_page": "2",
+  "num_bytes": "14567",
+  "page_num": "1",
+  "page_size": "5",
+  "timestamp": "1779162348",
+  "total_items": "6"
+}
