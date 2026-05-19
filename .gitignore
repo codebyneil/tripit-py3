@@ -165,3 +165,8 @@ tripit_creds.json
 .tripit-creds.json
 tripit_tokens.json
 tests/fixtures/raw/
+
+# Editor swap files (vim, emacs).
+*.swp
+*.swo
+*~
