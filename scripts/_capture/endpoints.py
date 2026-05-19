@@ -257,11 +257,3 @@ def iter_capture_specs(
         )
 
 
-def harvest_object_ids_from_envelope(envelope: Any, dest: dict[str, list[str]]) -> None:
-    """Pluck one id per object type from a Response envelope into `dest`."""
-    for attr, type_name in _OBJECT_FIELDS.items():
-        bucket = dest.setdefault(type_name, [])
-        for obj in getattr(envelope, attr, []) or []:
-            oid = getattr(obj, "id", None)
-            if oid and oid not in bucket:
-                bucket.append(oid)
