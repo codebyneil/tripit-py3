@@ -1,6 +1,6 @@
 [project]
 name = "tripit"
-version = "1.0.0"
+version = "2.0.0"
 description = "Modern Python 3 client for the TripIt v1 API"
 readme = "README.md"
 license = { file = "LICENSE.md" }
@@ -27,6 +27,9 @@ dev = [
 
 [project.scripts]
 tripit-authorize = "tripit.cli.authorize:main"
+# Note: the capture + export scripts in scripts/ are not packaged with the
+# wheel (they're dev tooling that depends on scripts._capture). Run them
+# from a repo checkout via `uv run python scripts/<name>.py`.
 
 [build-system]
 requires = ["hatchling"]

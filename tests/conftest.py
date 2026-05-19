@@ -25,9 +25,7 @@ def load_json_fixture() -> object:
     return _load
 
 
-def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item]
-) -> None:
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Skip @pytest.mark.live tests unless `-m live` (or stronger) is passed.
 
     The default `pytest` invocation must never hit the real TripIt API. The

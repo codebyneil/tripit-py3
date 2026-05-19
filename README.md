@@ -4,9 +4,15 @@ Modern Python 3 client for the TripIt v1 API. Synchronous, typed, robust.
 
 [![CI](https://github.com/codebyneil/tripit-py3/actions/workflows/ci.yml/badge.svg)](https://github.com/codebyneil/tripit-py3/actions)
 
-> v1.0.0 is a complete rewrite. The 0.x API (`OAuthConsumerCredential`,
-> `TravelObj`, XML SAX parsing, `_parse_command` magic) is gone. See
-> [`docs/migration-from-0.x.md`](docs/migration-from-0.x.md) for the mapping.
+> v2.0.0 — TripIt's `/oauth/authorize` now requires the registered callback
+> URL to be passed on both the request-token call and the authorize URL.
+> The client supports the full 1.0a callback + verifier round-trip plus a
+> bundled localhost-listener helper. Several model fields were corrected
+> against real API captures (notably `NotificationSetting` was rewritten).
+>
+> v1.0.0 was a complete rewrite of the original 0.x client. See
+> [`docs/migration-from-0.x.md`](docs/migration-from-0.x.md) for the 0.x → 1.x
+> mapping.
 
 ## Highlights
 
@@ -147,11 +153,31 @@ at = get_access_token(
 # at.oauth_token, at.oauth_token_secret are the values you'd save and reuse
 ```
 
+## Developer utility scripts
+
+Two scripts live in `scripts/` for hacking on the library against a real account:
+
+```bash
+# Dump every trip + nested object to one JSON file
+uv run python scripts/export_trips.py --output ~/Desktop/trips-backup.json --pretty
+
+# Capture per-endpoint scrubbed fixtures into tests/fixtures/json/real_*.json
+# (used by the round-trip + unknown-fields tests)
+uv run python scripts/capture_fixtures.py
+```
+
+Both read credentials from `tripit_creds.json` (gitignored — never committed),
+and cache OAuth access tokens to a separate `tripit_tokens.json`. The first
+run opens a TripIt approval URL in your browser; subsequent runs reuse the
+cached token. Register `https://127.0.0.1:8765/callback` as a redirect URI
+on TripIt's developer console for the listener flow to work.
+
 ## Development
 
 ```bash
 uv sync                     # install + dev deps
-uv run pytest               # tests + coverage
+uv run pytest               # tests + coverage (skips live tests by default)
+uv run pytest -m live       # also hit the real TripIt API (requires creds)
 uv run ruff check .         # lint
 uv run ruff format .        # format
 uv run ty check src/        # type check
