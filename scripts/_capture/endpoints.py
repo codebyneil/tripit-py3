@@ -73,40 +73,62 @@ class DiscoveryResult:
 
 
 def discovery_pass(client: TripIt) -> DiscoveryResult:
-    """Harvest IDs from the live account so the spec matrix can target them.
+    """Harvest trip + object IDs by walking list/trip and list/object envelopes.
 
-    All discovery calls go through the typed client (they only need IDs, not
-    raw JSON), so any TripIt-emitted field that the models drop is fine here.
+    `list/trip?include_objects=true` returns the full Response envelope with
+    Trip[] AND every nested object collection. We use it to harvest both at
+    once (one round trip per past/upcoming variant). For belt-and-suspenders
+    coverage we also call list/object directly, which is the API surface used
+    when no specific trip is selected.
     """
     result = DiscoveryResult()
 
-    # Upcoming trips with all objects nested.
-    try:
-        for trip in client.list_trips(include_objects=True, page_size=25):
-            if trip.id:
-                result.trip_ids.append(trip.id)
-    except TripItError as exc:
-        logger.warning("list_trips upcoming failed: %s", exc)
+    # Helper: pluck trip IDs + object IDs from a single Response envelope.
+    def _harvest_from(envelope: Any) -> None:
+        for trip in getattr(envelope, "trips", []) or []:
+            tid = getattr(trip, "id", None)
+            if tid and tid not in result.trip_ids:
+                result.trip_ids.append(tid)
+        for attr, type_name in _OBJECT_FIELDS.items():
+            bucket = result.object_ids_by_type.setdefault(type_name, [])
+            for obj in getattr(envelope, attr, []) or []:
+                oid = getattr(obj, "id", None)
+                if oid and oid not in bucket:
+                    bucket.append(oid)
 
-    # Past trips, also with objects.
-    try:
-        for trip in client.list_trips(past=True, include_objects=True, page_size=25):
-            if trip.id and trip.id not in result.trip_ids:
-                result.trip_ids.append(trip.id)
-    except TripItError as exc:
-        logger.warning("list_trips past failed: %s", exc)
+    # list/trip?include_objects=true (upcoming + past) returns the full
+    # envelope. Use list_trips_envelope-style iteration via the transport
+    # directly, since the typed client's list_trips() drops nested objects.
+    for past in (False, True):
+        params = {
+            "page_size": "25",
+            "include_objects": "true",
+            "page_num": "1",
+        }
+        if past:
+            params["past"] = "true"
+        try:
+            raw = client._transport.request_raw("GET", "/v1/list/trip", params=params)
+        except TripItError as exc:
+            logger.warning("list/trip include_objects (past=%s) failed: %s", past, exc)
+            continue
+        try:
+            from tripit.models.envelope import Response
 
-    # Object IDs — pull from the include_objects envelope via list_objects_envelope.
-    try:
-        for envelope in client.list_objects_envelope(page_size=25):
-            for attr, type_name in _OBJECT_FIELDS.items():
-                bucket = result.object_ids_by_type.setdefault(type_name, [])
-                for obj in getattr(envelope, attr, []) or []:
-                    oid = getattr(obj, "id", None)
-                    if oid and oid not in bucket:
-                        bucket.append(oid)
-    except TripItError as exc:
-        logger.warning("list_objects discovery failed: %s", exc)
+            envelope = Response.model_validate(raw.get("Response", raw))
+        except Exception as exc:
+            logger.warning("Couldn't parse list/trip envelope (past=%s): %s", past, exc)
+            continue
+        _harvest_from(envelope)
+
+    # Also call list/object directly (past + upcoming) — catches objects
+    # not nested under a trip in include_objects responses.
+    for past in (False, True):
+        try:
+            for envelope in client.list_objects_envelope(past=past, page_size=25):
+                _harvest_from(envelope)
+        except TripItError as exc:
+            logger.warning("list_objects discovery (past=%s) failed: %s", past, exc)
 
     # Points programs — TripIt Pro only; tolerate failure.
     try:

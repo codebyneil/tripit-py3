@@ -1,0 +1,744 @@
+{
+  "ActivityObject": {
+    "EndDateTime": {
+      "date": "2025-07-28",
+      "time": "22:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "StartDateTime": {
+      "date": "2025-07-28",
+      "time": "20:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "detail_type_code": "M",
+    "display_name": "Some Meeting",
+    "end_time": "22:00:00",
+    "id": "1345108034",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "false",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793479",
+    "relative_url": "/reservation/show/id/1345108034",
+    "trip_id": "368545721"
+  },
+  "AirObject": {
+    "Segment": {
+      "Emissions": {
+        "co2": "0.79329"
+      },
+      "EndDateTime": {
+        "date": "2025-07-24",
+        "time": "19:08:00",
+        "timezone": "Pacific/Honolulu",
+        "utc_offset": "-10:00"
+      },
+      "StartDateTime": {
+        "date": "2025-07-24",
+        "time": "16:00:00",
+        "timezone": "America/Los_Angeles",
+        "utc_offset": "-07:00"
+      },
+      "Status": {
+        "flight_status": "200",
+        "last_modified": "1752793344"
+      },
+      "aircraft": "32Q",
+      "aircraft_display_name": "Airbus A321neo",
+      "change_reservation_url": "https://www.delta.com/us/en/change-cancel/change-flight",
+      "customer_support_url": "https://www.delta.com/us/en/need-help/overview",
+      "distance": "2,698 mi",
+      "does_cross_idl": "false",
+      "duration": "6h, 08m",
+      "end_airport_code": "LIH",
+      "end_airport_latitude": "21.978204",
+      "end_airport_longitude": "-159.349445",
+      "end_airport_name": "Lihue Airport",
+      "end_city_name": "Kauai Island",
+      "end_country_code": "US",
+      "id": "5086177609",
+      "is_hidden": "false",
+      "is_international": "false",
+      "marketing_airline": "Delta Air Lines",
+      "marketing_airline_code": "DL",
+      "marketing_flight_number": "345",
+      "mobile_change_reservation_url": "https://m.delta.com/?p=contactUsScreen",
+      "mobile_customer_support_url": "https://m.delta.com/?p=contactUsScreen",
+      "mobile_home_url": "https://m.delta.com/?p=homeScreen",
+      "refund_info_url": "https://www.delta.com/us/en/change-cancel/overview",
+      "seats": "12A",
+      "start_airport_code": "SEA",
+      "start_airport_latitude": "47.443839",
+      "start_airport_longitude": "-122.301732",
+      "start_airport_name": "Seattle-Tacoma International Airport",
+      "start_city_name": "Seattle",
+      "start_country_code": "US",
+      "stops": "nonstop",
+      "web_home_url": "https://www.delta.com"
+    },
+    "display_name": "Flight",
+    "id": "1345107758",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "true",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793344",
+    "relative_url": "/reservation/show/id/1345107758",
+    "supplier_conf_num": "FGDFKJ",
+    "trip_id": "368545721"
+  },
+  "CruiseObject": {
+    "Segment": [
+      {
+        "StartDateTime": {
+          "date": "2025-07-29",
+          "timezone": "Europe/Brussels"
+        },
+        "id": "5086179069"
+      },
+      {
+        "StartDateTime": {
+          "date": "2025-07-30",
+          "timezone": "Europe/Brussels"
+        },
+        "id": "5086179073"
+      }
+    ],
+    "display_name": "Ritz Carlton Cruises",
+    "id": "1345107943",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "false",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793446",
+    "relative_url": "/reservation/show/id/1345107943",
+    "trip_id": "368545721"
+  },
+  "LodgingObject": {
+    "Address": {
+      "address": "Av. Louise 71, 1050 Bruxelles, Belgium",
+      "city": "Saint-gilles",
+      "country": "BE",
+      "latitude": "50.832468",
+      "longitude": "4.357478",
+      "state": "Bruxelles",
+      "zip": "1060"
+    },
+    "EndDateTime": {
+      "date": "2025-07-28",
+      "time": "10:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "StartDateTime": {
+      "date": "2025-07-26",
+      "time": "15:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "display_name": "Steigenberger Wiltcher's",
+    "id": "1345107899",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "true",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793417",
+    "number_rooms": "3",
+    "relative_url": "/reservation/show/id/1345107899",
+    "supplier_name": "Steigenberger Wiltcher's",
+    "supplier_phone": "+1-555-555-12dc",
+    "supplier_url": "https://hrewards.com/steigenberger-icon-wiltchers-bruessel?wt_mc=seo_listing.shr.yext.bruessel_wiltchers.hotel_link.text_cta",
+    "trip_id": "368545721"
+  },
+  "Profile": {
+    "@attributes": {
+      "ref": "ryZ03lKSXLWI67EaT_EdRA"
+    },
+    "NotificationSettings": {
+      "NotificationSetting": [
+        {
+          "code": "EH",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInCheckInEmail",
+          "type": "email"
+        },
+        {
+          "code": "ED",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInDepartEmail",
+          "type": "email"
+        },
+        {
+          "code": "EA",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInArriveEmail",
+          "type": "email"
+        },
+        {
+          "code": "EC",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInCancelEmail",
+          "type": "email"
+        },
+        {
+          "code": "EP",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInPriceMonEmail",
+          "type": "email"
+        },
+        {
+          "code": "ES",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInSeatAlertEmail",
+          "type": "email"
+        },
+        {
+          "code": "EE",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInSchedChgEmail",
+          "type": "email"
+        },
+        {
+          "code": "EI",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInImportsEmail",
+          "type": "email"
+        },
+        {
+          "code": "ET",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInPretripEmail",
+          "type": "email"
+        },
+        {
+          "code": "EN",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInInvsNotifsEmail",
+          "type": "email"
+        },
+        {
+          "code": "EL",
+          "is_enabled": "true",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyExpireAlertEmail",
+          "type": "email"
+        },
+        {
+          "code": "EO",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInAirportMapAlertEmail",
+          "type": "email"
+        },
+        {
+          "code": "ER",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInPassportRenewalReminderEmail",
+          "type": "email"
+        },
+        {
+          "code": "EY",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyActivityUpdatedEmail",
+          "type": "email"
+        },
+        {
+          "code": "EU",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptedInUpdates",
+          "type": "email"
+        },
+        {
+          "code": "EV",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptedInSurveys",
+          "type": "email"
+        },
+        {
+          "code": "PH",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCheckInPush",
+          "type": "push"
+        },
+        {
+          "code": "PD",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInDepartPush",
+          "type": "push"
+        },
+        {
+          "code": "PA",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInArrivePush",
+          "type": "push"
+        },
+        {
+          "code": "PC",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCancelPush",
+          "type": "push"
+        },
+        {
+          "code": "PP",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInPriceMonPush",
+          "type": "push"
+        },
+        {
+          "code": "PS",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInSeatAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PE",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInSchedChgPush",
+          "type": "push"
+        },
+        {
+          "code": "PI",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInImportsPush",
+          "type": "push"
+        },
+        {
+          "code": "PT",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInPretripPush",
+          "type": "push"
+        },
+        {
+          "code": "PN",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInInvsNotifsPush",
+          "type": "push"
+        },
+        {
+          "code": "PL",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyExpireAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PU",
+          "is_enabled": "false",
+          "is_premium": "FREE",
+          "name": "IsOptInProductUpdateOffersPush",
+          "type": "push"
+        },
+        {
+          "code": "PW",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInGoNowPush",
+          "type": "push"
+        },
+        {
+          "code": "PM",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInTermGateInfoPush",
+          "type": "push"
+        },
+        {
+          "code": "PR",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInTermGateReminderPush",
+          "type": "push"
+        },
+        {
+          "code": "PO",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInAirportMapAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PQ",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyAttentionAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PK",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInRiskAlertPush",
+          "type": "push"
+        },
+        {
+          "code": "PF",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInIncomingPlaneTrackingPush",
+          "type": "push"
+        },
+        {
+          "code": "SH",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCheckInSms",
+          "type": "sms"
+        },
+        {
+          "code": "SD",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInDepartSms",
+          "type": "sms"
+        },
+        {
+          "code": "SA",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInArriveSms",
+          "type": "sms"
+        },
+        {
+          "code": "SC",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInCancelSms",
+          "type": "sms"
+        },
+        {
+          "code": "SP",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInPriceMonSms",
+          "type": "sms"
+        },
+        {
+          "code": "SS",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInSeatAlertSms",
+          "type": "sms"
+        },
+        {
+          "code": "SL",
+          "is_enabled": "false",
+          "is_premium": "PRO",
+          "name": "IsOptInLoyaltyExpireAlertSms",
+          "type": "sms"
+        }
+      ]
+    },
+    "ProfileEmailAddresses": {
+      "ProfileEmailAddress": [
+        {
+          "address": "538866b0@example.invalid",
+          "email_ref": "BzLX6bIX-aP3BNJOYwoYYA",
+          "import_trip_plan_sharing": "concur_sharing_none",
+          "is_auto_import": "false",
+          "is_auto_inbox_eligible": "true",
+          "is_confirmed": "true",
+          "is_primary": "true",
+          "uuid": "7dd5f60c-63f9-40b8-bb84-a21c27dc70c9",
+          "uuid_ref": "WXp4SidfzP9c9XmDJ3SH2sWrUXb0LsblfhcQD94XX+k="
+        },
+        {
+          "address": "cc12941f@example.invalid",
+          "email_ref": "71TM1vHGzWcE3X-ppdphBg",
+          "import_trip_plan_sharing": "concur_sharing_none",
+          "is_auto_import": "false",
+          "is_auto_inbox_eligible": "true",
+          "is_confirmed": "true",
+          "is_primary": "false",
+          "uuid": "f386afda-e0b3-43fc-911f-309f48fc3dbb",
+          "uuid_ref": "GBLKNq8VJc2oagD6W6E0JgN+fCJuTpTYSLdEvFQdsL0="
+        }
+      ]
+    },
+    "UserSettings": {
+      "AiImport": {
+        "introduced_feature_mobile_ts": "0",
+        "introduced_feature_webapp_ts": "0",
+        "is_opt_in_read_only": "true",
+        "is_opt_in_visible": "false",
+        "is_opted_in": "false",
+        "opted_in_ts": "0"
+      },
+      "AppleFoundationModel": {
+        "is_opted_in": "true"
+      }
+    },
+    "date_endian_format": "M",
+    "date_of_birth": "1987-07-01",
+    "distance": "M",
+    "first_name": "Person fafe16c1",
+    "home_city": "Los Angeles, CA",
+    "home_country_code": "US",
+    "hour_clock": "1",
+    "ical_url": "https://www.tripit.com/feed/ical/private/BF4D8878-45B508F1BEF17919E957AAC5191F8118/tripit.ics",
+    "is_cal_detailed": "true",
+    "is_cal_including_notes": "false",
+    "is_cal_including_sensitive_info": "false",
+    "is_cal_localtime": "true",
+    "is_client": "true",
+    "is_pro": "false",
+    "is_public_trip_sharing_disabled": "false",
+    "language_tag": "en-US",
+    "last_name": "Person 17255d50",
+    "profile_url": "people/neil7140",
+    "public_display_name": "Person 13e030bd",
+    "screen_name": "Person b3b64473",
+    "should_auto_import": "true",
+    "temperature": "F",
+    "uuid": "f8e08600-ce86-5137-da94-f494d14eeffc"
+  },
+  "RailObject": {
+    "Segment": {
+      "EndDateTime": {
+        "date": "2025-07-29",
+        "timezone": "Europe/Paris"
+      },
+      "EndStationAddress": {
+        "address": "75012 Paris, France, Paris Bercy",
+        "city": "Paris",
+        "country": "FR",
+        "latitude": "48.839220",
+        "longitude": "2.382790",
+        "state": "IDF",
+        "zip": "75012"
+      },
+      "StartDateTime": {
+        "date": "2025-07-28",
+        "timezone": "Europe/Brussels"
+      },
+      "StartStationAddress": {
+        "address": "Carr de l'Europe, 1000 Bruxelles, Belgium, Brussel-Centraal",
+        "city": "Bruxelles",
+        "country": "BE",
+        "latitude": "50.845504",
+        "longitude": "4.357096",
+        "state": "Bruxelles",
+        "zip": "1000"
+      },
+      "carrier_name": "The Orient Express",
+      "end_station_name": "Paris Bercy",
+      "id": "5086180749",
+      "start_station_name": "Brussel-Centraal",
+      "train_number": "1"
+    },
+    "display_name": "Rail",
+    "id": "1345108149",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "true",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793537",
+    "relative_url": "/reservation/show/id/1345108149",
+    "supplier_conf_num": "OIEUWOR",
+    "trip_id": "368545721"
+  },
+  "Trip": {
+    "PrimaryLocationAddress": {
+      "address": "Brussels, Belgium",
+      "city": "Brussels",
+      "country": "BE",
+      "latitude": "50.850450",
+      "longitude": "4.348780",
+      "state": "Brussels Capital"
+    },
+    "TripInvitees": {
+      "Invitee": {
+        "@attributes": {
+          "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+        },
+        "is_owner": "true",
+        "is_read_only": "false",
+        "is_traveler": "true"
+      }
+    },
+    "TripPurposes": {
+      "is_auto_generated": "false",
+      "purpose_type_code": "L"
+    },
+    "display_name": "Another Trip",
+    "end_date": "2025-08-06",
+    "id": "368545721",
+    "image_url": "https://www.tripit.com/images/places/be/brussels.jpg",
+    "is_private": "false",
+    "is_trip_owner_inner_circle_sharer": "false",
+    "last_modified": "1752793536",
+    "primary_location": "Brussels, Belgium",
+    "relative_url": "/trip/show/id/368545721",
+    "start_date": "2025-07-24"
+  },
+  "WeatherObject": [
+    {
+      "avg_high_temp_c": "22",
+      "avg_low_temp_c": "13",
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-24",
+      "display_name": "Weather - Kauai Island, HI",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "location": "Kauai Island, HI",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_high_temp_c": "22",
+      "avg_low_temp_c": "13",
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-25",
+      "display_name": "Weather - Kauai Island, HI",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "location": "Kauai Island, HI",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_high_temp_c": "23",
+      "avg_low_temp_c": "14",
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-26",
+      "display_name": "Weather - Saint-gilles, Belgium",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "location": "Saint-gilles, Belgium",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_high_temp_c": "23",
+      "avg_low_temp_c": "14",
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-27",
+      "display_name": "Weather - Saint-gilles, Belgium",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "location": "Saint-gilles, Belgium",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_high_temp_c": "23",
+      "avg_low_temp_c": "14",
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-28",
+      "display_name": "Weather - Saint-gilles, Belgium",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "location": "Saint-gilles, Belgium",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-29",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-30",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-07-31",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-08-01",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-08-02",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-08-03",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-08-04",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-08-05",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    },
+    {
+      "avg_wind_speed_kn": "0",
+      "date": "2025-08-06",
+      "display_name": "Weather",
+      "is_client_traveler": "true",
+      "is_display_name_auto_generated": "true",
+      "last_modified": "1752793536",
+      "trip_id": "368545721"
+    }
+  ],
+  "num_bytes": "22152",
+  "timestamp": "1779162523"
+}

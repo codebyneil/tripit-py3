@@ -364,6 +364,40 @@
     "temperature": "F",
     "uuid": "f8e08600-ce86-5137-da94-f494d14eeffc"
   },
-  "num_bytes": "9601",
-  "timestamp": "1779162515"
+  "Trip": {
+    "PrimaryLocationAddress": {
+      "address": "Brussels, Belgium",
+      "city": "Brussels",
+      "country": "BE",
+      "latitude": "50.850450",
+      "longitude": "4.348780",
+      "state": "Brussels Capital"
+    },
+    "TripInvitees": {
+      "Invitee": {
+        "@attributes": {
+          "profile_ref": "ryZ03lKSXLWI67EaT_EdRA"
+        },
+        "is_owner": "true",
+        "is_read_only": "false",
+        "is_traveler": "true"
+      }
+    },
+    "TripPurposes": {
+      "is_auto_generated": "false",
+      "purpose_type_code": "L"
+    },
+    "display_name": "Another Trip",
+    "end_date": "2025-08-06",
+    "id": "368545721",
+    "image_url": "https://www.tripit.com/images/places/be/brussels.jpg",
+    "is_private": "false",
+    "is_trip_owner_inner_circle_sharer": "false",
+    "last_modified": "1752793536",
+    "primary_location": "Brussels, Belgium",
+    "relative_url": "/trip/show/id/368545721",
+    "start_date": "2025-07-24"
+  },
+  "num_bytes": "10575",
+  "timestamp": "1779162521"
 }
