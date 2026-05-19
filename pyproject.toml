@@ -57,3 +57,6 @@ include = ["src"]
 addopts = "-ra --strict-markers --cov=tripit --cov-report=term-missing"
 testpaths = ["tests"]
 filterwarnings = ["error"]
+markers = [
+    "live: hits the real TripIt API; skipped by default. Run with `pytest -m live` and TRIPIT_* env vars (or tripit_creds.json / tripit_tokens.json) populated.",
+]

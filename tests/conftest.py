@@ -1,4 +1,4 @@
-"""Shared pytest fixtures."""
+"""Shared pytest fixtures + skip-by-default wiring for @pytest.mark.live."""
 
 from __future__ import annotations
 
@@ -23,3 +23,22 @@ def load_json_fixture() -> object:
             return json.load(f)
 
     return _load
+
+
+def pytest_collection_modifyitems(
+    config: pytest.Config, items: list[pytest.Item]
+) -> None:
+    """Skip @pytest.mark.live tests unless `-m live` (or stronger) is passed.
+
+    The default `pytest` invocation must never hit the real TripIt API. The
+    live test is opt-in: `uv run pytest -m live tests/test_oauth_live.py`.
+    """
+    mark_expr = config.getoption("-m") or ""
+    if "live" in mark_expr:
+        return  # user explicitly opted in
+    skip_live = pytest.mark.skip(
+        reason="live API test; run with `pytest -m live` and TRIPIT_* env vars set."
+    )
+    for item in items:
+        if "live" in item.keywords:
+            item.add_marker(skip_live)
