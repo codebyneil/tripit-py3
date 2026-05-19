@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:include schemaLocation="tripit-api-obj-v1.xsd" />
+
+  <xs:complexType name="Request">
+    <xs:sequence>
+      <xs:choice>
+        <xs:element maxOccurs="unbounded" name="TripInvitations" type="TripInvitations"/>
+        <xs:element maxOccurs="unbounded" name="Invitation" type="Invitation"/>
+        <xs:element maxOccurs="1" name="Trip" type="Trip"/>
+        <xs:element maxOccurs="1" name="ActivityObject" type="ActivityObject"/>
+        <xs:element maxOccurs="1" name="AirObject" type="AirObject"/>
+        <xs:element maxOccurs="1" name="CarObject" type="CarObject"/>
+        <xs:element maxOccurs="1" name="CruiseObject" type="CruiseObject"/>
+        <xs:element maxOccurs="1" name="DirectionsObject" type="DirectionsObject"/>
+        <xs:element maxOccurs="1" name="LodgingObject" type="LodgingObject"/>
+        <xs:element maxOccurs="1" name="MapObject" type="MapObject"/>
+        <xs:element maxOccurs="1" name="NoteObject" type="NoteObject"/>
+        <xs:element maxOccurs="1" name="ParkingObject" type="ParkingObject"/>
+        <xs:element maxOccurs="1" name="RailObject" type="RailObject"/>
+        <xs:element maxOccurs="1" name="RestaurantObject" type="RestaurantObject"/>
+        <xs:element maxOccurs="1" name="TransportObject" type="TransportObject"/>
+        <xs:element maxOccurs="1" name="Profile" type="Profile"/>
+        <xs:element maxOccurs="1" name="SeatTrackerSubscription" type="SeatTrackerSubscription"/>
+        <xs:element maxOccurs="1" name="TripItemShare" type="TripItemShare"/>
+        <xs:element maxOccurs="1" name="EmailMessage" type="EmailMessage"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="Request" type="Request"/>
+
+</xs:schema>
