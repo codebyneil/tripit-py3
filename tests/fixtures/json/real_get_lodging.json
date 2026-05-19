@@ -1,0 +1,40 @@
+{
+  "LodgingObject": {
+    "Address": {
+      "address": "Av. Louise 71, 1050 Bruxelles, Belgium",
+      "city": "Saint-gilles",
+      "country": "BE",
+      "latitude": "50.832468",
+      "longitude": "4.357478",
+      "state": "Bruxelles",
+      "zip": "1060"
+    },
+    "EndDateTime": {
+      "date": "2025-07-28",
+      "time": "10:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "StartDateTime": {
+      "date": "2025-07-26",
+      "time": "15:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "display_name": "Steigenberger Wiltcher's",
+    "id": "1345107899",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "true",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793417",
+    "number_rooms": "3",
+    "relative_url": "/reservation/show/id/1345107899",
+    "supplier_name": "Steigenberger Wiltcher's",
+    "supplier_phone": "+1-555-555-12dc",
+    "supplier_url": "https://hrewards.com/steigenberger-icon-wiltchers-bruessel?wt_mc=seo_listing.shr.yext.bruessel_wiltchers.hotel_link.text_cta",
+    "trip_id": "368545721"
+  },
+  "num_bytes": "1291",
+  "timestamp": "1779162685"
+}

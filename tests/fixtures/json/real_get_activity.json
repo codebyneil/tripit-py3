@@ -1,0 +1,29 @@
+{
+  "ActivityObject": {
+    "EndDateTime": {
+      "date": "2025-07-28",
+      "time": "22:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "StartDateTime": {
+      "date": "2025-07-28",
+      "time": "20:00:00",
+      "timezone": "Europe/Brussels",
+      "utc_offset": "+02:00"
+    },
+    "detail_type_code": "M",
+    "display_name": "Some Meeting",
+    "end_time": "22:00:00",
+    "id": "1345108034",
+    "is_client_traveler": "true",
+    "is_display_name_auto_generated": "false",
+    "is_purchased": "false",
+    "is_tripit_booking": "false",
+    "last_modified": "1752793479",
+    "relative_url": "/reservation/show/id/1345108034",
+    "trip_id": "368545721"
+  },
+  "num_bytes": "843",
+  "timestamp": "1779162687"
+}
