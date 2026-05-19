@@ -133,7 +133,8 @@ def ensure_access_token(
     # with TripIt so the issued token is bound to it.
     effective_callback = callback_url
     if effective_callback is None and listen_port is not None:
-        effective_callback = f"http://127.0.0.1:{listen_port}/callback"
+        # HTTPS — TripIt's developer console rejects plain http callbacks.
+        effective_callback = f"https://127.0.0.1:{listen_port}/callback"
 
     logger.info("Fetching request token (oauth_callback=%s)...", effective_callback)
     request_token = get_request_token(
