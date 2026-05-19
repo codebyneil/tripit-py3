@@ -195,6 +195,9 @@ class AirSegment(TripItModel):
     uuid: str | None = None
     is_international: TripItBool | None = None
     does_cross_idl: TripItBool | None = None
+    # CO2/emissions data (added by TripIt mid-2024). Shape isn't in the XSD;
+    # tolerate any nested structure.
+    emissions: dict[str, Any] | None = Field(default=None, alias="Emissions")
 
 
 class AirObject(BaseReservationObject):

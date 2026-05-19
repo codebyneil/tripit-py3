@@ -26,6 +26,8 @@ class ProfileEmailAddress(TripItModel):
     is_auto_import: TripItBool
     is_confirmed: TripItBool
     is_primary: TripItBool | None = None
+    is_auto_inbox_eligible: TripItBool | None = None
+    import_trip_plan_sharing: str | None = None
 
 
 class ProfileEmailAddresses(TripItModel):
@@ -40,9 +42,13 @@ class ProfileEmailAddresses(TripItModel):
 
 
 class NotificationSetting(TripItModel):
-    setting_type: str | None = None
-    setting_method: str | None = None
+    code: str | None = None
+    name: str | None = None
+    type: str | None = None
     is_enabled: TripItBool | None = None
+    # Despite the `is_` prefix, TripIt sends this as a tier label
+    # ("FREE" / "PRO"), not a boolean.
+    is_premium: str | None = None
 
 
 class NotificationSettings(TripItModel):
@@ -84,11 +90,16 @@ class AdditionalFactors(TripItModel):
 
 
 class UserSettings(TripItModel):
-    """Free-form user settings — fields vary by account; tolerate anything."""
+    """User-account settings. Nested structures vary by account & feature flags.
 
-    model_config = TripItModel.model_config.copy()
-    # Keep the freeform bag accessible to callers who really need it.
-    extra_settings: dict[str, Any] | None = None
+    We keep them as untyped dicts since TripIt evolves them faster than the
+    XSD; their content is rarely interesting for callers.
+    """
+
+    ai_import: dict[str, Any] | None = Field(default=None, alias="AiImport")
+    apple_foundation_model: dict[str, Any] | None = Field(
+        default=None, alias="AppleFoundationModel"
+    )
 
 
 class BillingPeriod(TripItModel):
@@ -115,6 +126,9 @@ class Profile(TripItModel):
     # `{"@attributes": {"ref": "..."}}`. A `model_validator` flattens that into
     # the plain `ref` field below before standard parsing runs.
     ref: str | None = None
+    # Explicit field so the unknown-fields detector recognizes @attributes as
+    # consumed by us; excluded from dumps so round-trip stays stable.
+    attributes: dict[str, Any] | None = Field(default=None, alias="@attributes", exclude=True)
 
     @model_validator(mode="before")
     @classmethod
@@ -123,7 +137,7 @@ class Profile(TripItModel):
             attrs = data.get("@attributes")
             if isinstance(attrs, dict) and "ref" in attrs:
                 # Don't mutate the caller's dict.
-                merged = {k: v for k, v in data.items() if k != "@attributes"}
+                merged = {**data}
                 merged.setdefault("ref", attrs["ref"])
                 return merged
         return data

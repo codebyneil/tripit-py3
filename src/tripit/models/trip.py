@@ -36,6 +36,7 @@ class Trip(TripItModel):
     is_pro_enabled: TripItBool | None = None
     last_modified: int | None = None
     is_owner_traveler: TripItBool | None = None
+    is_trip_owner_inner_circle_sharer: TripItBool | None = None
 
     trip_purposes: TripPurposes | None = Field(default=None, alias="TripPurposes")
     trip_invitees: Invitees | None = Field(default=None, alias="TripInvitees")

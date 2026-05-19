@@ -81,6 +81,7 @@ class Response(TripItModel):
     page_num: int | None = None
     page_size: int | None = None
     max_page: int | None = None
+    total_items: int | None = None
 
     @field_validator(
         "errors",

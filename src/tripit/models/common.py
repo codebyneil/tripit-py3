@@ -6,7 +6,7 @@ import datetime as _dt
 from decimal import Decimal
 from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from tripit.models._base import TripItBool, TripItId, TripItModel
 
@@ -81,7 +81,24 @@ class Invitee(TripItModel):
     is_read_only: TripItBool | None = None
     is_traveler: TripItBool | None = None
     is_sent: TripItBool | None = None
+    is_owner: TripItBool | None = None
     profile_ref: str | None = None
+    # Explicit field so the unknown-fields detector recognizes @attributes
+    # as consumed by us; excluded from dumps so round-trip stays stable.
+    attributes: dict[str, Any] | None = Field(default=None, alias="@attributes", exclude=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _lift_profile_ref(cls, data: Any) -> Any:
+        # TripIt's JSON encodes XML attributes (`profile_ref` on <Invitee>)
+        # under an "@attributes" dict. Lift it into the flat field.
+        if isinstance(data, dict):
+            attrs = data.get("@attributes")
+            if isinstance(attrs, dict) and "profile_ref" in attrs:
+                merged = {**data}
+                merged.setdefault("profile_ref", attrs["profile_ref"])
+                return merged
+        return data
 
 
 class TripPurpose(TripItModel):
@@ -93,9 +110,16 @@ class TripPurpose(TripItModel):
 
 
 class TripPurposes(TripItModel):
-    """Container for one or more `TripPurpose` entries."""
+    """Container for one or more `TripPurpose` entries.
+
+    TripIt's JSON sometimes flattens a single TripPurpose into the wrapper,
+    so the wrapper itself can carry `is_auto_generated` and `purpose_type_code`
+    directly alongside the `TripPurpose` collection.
+    """
 
     trip_purposes: list[TripPurpose] = Field(default_factory=list, alias="TripPurpose")
+    is_auto_generated: TripItBool | None = None
+    purpose_type_code: str | None = None
 
     @field_validator("trip_purposes", mode="before")
     @classmethod
