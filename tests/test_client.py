@@ -71,7 +71,7 @@ def test_list_trips_filters_pass_through_as_query_params() -> None:
 
 @respx.mock
 def test_get_trip_returns_typed_trip() -> None:
-    respx.get("https://api.tripit.example/v1/get/trip").mock(
+    respx.get("https://api.tripit.example/v1/get/trip/id/999000111222").mock(
         return_value=httpx.Response(200, json=_load("get_trip_single.json"))
     )
     with _client() as c:
@@ -81,9 +81,21 @@ def test_get_trip_returns_typed_trip() -> None:
 
 
 @respx.mock
+def test_get_trip_uses_path_form_id() -> None:
+    route = respx.get("https://api.tripit.example/v1/get/trip/id/999000111222").mock(
+        return_value=httpx.Response(200, json=_load("get_trip_single.json"))
+    )
+    with _client() as c:
+        c.get_trip("999000111222")
+    assert route.called
+    # Verify the id is in the URL path, not as a query param.
+    assert "id=" not in str(route.calls.last.request.url.query)
+
+
+@respx.mock
 def test_get_trip_with_no_results_raises_not_found() -> None:
     empty = {"Response": {"timestamp": 1, "num_bytes": 1}}
-    respx.get("https://api.tripit.example/v1/get/trip").mock(
+    respx.get("https://api.tripit.example/v1/get/trip/id/nonexistent").mock(
         return_value=httpx.Response(200, json=empty)
     )
     with _client() as c, pytest.raises(TripItNotFoundError):

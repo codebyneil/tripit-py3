@@ -119,10 +119,12 @@ class TripIt:
 
     def get_trip(self, trip_id: str, *, include_objects: bool = False) -> Trip:
         """Fetch a single Trip by id. Raises `TripItNotFoundError` if missing."""
-        params: dict[str, Any] = {"id": str(trip_id)}
+        params: dict[str, Any] = {}
         if include_objects:
             params["include_objects"] = "true"
-        envelope = self._transport.request_json("GET", "/v1/get/trip", params=params)
+        envelope = self._transport.request_json(
+            "GET", f"/v1/get/trip/id/{trip_id}", params=params or None
+        )
         if not envelope.trips:
             raise TripItNotFoundError(f"Trip {trip_id} not in response", status_code=404)
         return envelope.trips[0]
@@ -165,9 +167,7 @@ class TripIt:
         return envelope.profiles[0]
 
     def get_points_program(self, program_id: str) -> PointsProgram:
-        envelope = self._transport.request_json(
-            "GET", "/v1/get/points_program", params={"id": str(program_id)}
-        )
+        envelope = self._transport.request_json("GET", f"/v1/get/points_program/id/{program_id}")
         if not envelope.points_programs:
             raise TripItNotFoundError(
                 f"PointsProgram {program_id} not in response", status_code=404
@@ -181,9 +181,7 @@ class TripIt:
     # ----- Reservation object reads -----
 
     def _get_single(self, entity: str, object_id: str, pluck: str) -> Any:
-        envelope = self._transport.request_json(
-            "GET", f"/v1/get/{entity}", params={"id": str(object_id)}
-        )
+        envelope = self._transport.request_json("GET", f"/v1/get/{entity}/id/{object_id}")
         items = getattr(envelope, pluck)
         if not items:
             raise TripItNotFoundError(f"{entity} {object_id} not in response", status_code=404)
@@ -237,10 +235,10 @@ class TripIt:
         return items[0]
 
     def _replace(self, entity: str, tag: str, object_id: str, model: Any, pluck: str) -> Any:
-        """POST /v1/replace/<entity> with id and serialized model."""
+        """POST /v1/replace/<entity>/id/<id> with the serialized model."""
         xml = model_to_request_xml(tag, model)
         envelope = self._transport.request_json(
-            "POST", f"/v1/replace/{entity}", data={"id": str(object_id), "xml": xml}
+            "POST", f"/v1/replace/{entity}/id/{object_id}", data={"xml": xml}
         )
         items = getattr(envelope, pluck)
         if not items:
@@ -250,7 +248,10 @@ class TripIt:
         return items[0]
 
     def _delete(self, entity: str, object_id: str) -> None:
-        self._transport.request_json("POST", f"/v1/delete/{entity}", data={"id": str(object_id)})
+        # Note: docs say this should be GET, not POST. Tracked as follow-up bug
+        # in the plan — verifying which TripIt actually accepts requires a live
+        # call. Keeping POST for now (matches the 0.x library's behavior).
+        self._transport.request_json("POST", f"/v1/delete/{entity}/id/{object_id}")
 
     # Trip
     def create_trip(self, trip: Trip) -> Trip:

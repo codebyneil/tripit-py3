@@ -66,36 +66,36 @@ def test_create_trip_posts_xml_and_returns_typed_response() -> None:
 
 
 @respx.mock
-def test_replace_trip_posts_id_and_xml() -> None:
+def test_replace_trip_uses_path_id_and_posts_xml() -> None:
     response_payload = _load("get_trip_single.json")
-    route = respx.post("https://api.tripit.example/v1/replace/trip").mock(
+    route = respx.post("https://api.tripit.example/v1/replace/trip/id/999000111222").mock(
         return_value=httpx.Response(200, json=response_payload)
     )
     with _client() as c:
         c.replace_trip("999000111222", Trip(display_name="Renamed"))
 
     req = route.calls.last.request
-    assert _form_field(req.content, "id") == "999000111222"
+    # id is in the URL path; only `xml` is in the form body.
     xml_str = _form_field(req.content, "xml")
     root = etree.fromstring(xml_str.encode("utf-8"))
     assert root.find("Trip/display_name").text == "Renamed"
+    from urllib.parse import parse_qs
+
+    assert "id" not in parse_qs(req.content.decode("utf-8"))
 
 
 @respx.mock
-def test_delete_trip_posts_id_only_returns_none() -> None:
+def test_delete_trip_uses_path_id_with_empty_body() -> None:
     empty = {"Response": {"timestamp": 1, "num_bytes": 1}}
-    route = respx.post("https://api.tripit.example/v1/delete/trip").mock(
+    route = respx.post("https://api.tripit.example/v1/delete/trip/id/999000111222").mock(
         return_value=httpx.Response(200, json=empty)
     )
     with _client() as c:
         result = c.delete_trip("999000111222")
     assert result is None
     req = route.calls.last.request
-    assert _form_field(req.content, "id") == "999000111222"
-    # No xml field on delete.
-    from urllib.parse import parse_qs
-
-    assert "xml" not in parse_qs(req.content.decode("utf-8"))
+    # Body has no id and no xml — everything's in the URL path.
+    assert req.content == b""
 
 
 @respx.mock

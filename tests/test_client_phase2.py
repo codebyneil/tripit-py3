@@ -53,7 +53,7 @@ def test_get_profile_missing_raises_not_found() -> None:
 
 @respx.mock
 def test_get_air_returns_typed_air_object() -> None:
-    respx.get("https://api.tripit.example/v1/get/air").mock(
+    respx.get("https://api.tripit.example/v1/get/air/id/555111").mock(
         return_value=httpx.Response(200, json=_load("get_air.json"))
     )
     with _client() as c:
@@ -76,7 +76,7 @@ def test_list_points_programs_returns_list() -> None:
 @respx.mock
 def test_get_points_program_single() -> None:
     single = {"Response": {"PointsProgram": {"id": "111", "name": "Aeroplan", "balance": "85000"}}}
-    respx.get("https://api.tripit.example/v1/get/points_program").mock(
+    respx.get("https://api.tripit.example/v1/get/points_program/id/111").mock(
         return_value=httpx.Response(200, json=single)
     )
     with _client() as c:
