@@ -1,0 +1,21 @@
+{
+  "Response": {
+    "timestamp": 1700000000,
+    "num_bytes": 512,
+    "PointsProgram": [
+      {
+        "id": "111",
+        "name": "Aeroplan",
+        "account_number": "ABC-1234",
+        "balance": "85000",
+        "elite_status": "25K"
+      },
+      {
+        "id": "222",
+        "name": "Marriott Bonvoy",
+        "account_number": "MM-9999",
+        "balance": "120000"
+      }
+    ]
+  }
+}

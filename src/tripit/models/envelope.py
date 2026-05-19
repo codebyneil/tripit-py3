@@ -1,9 +1,4 @@
-"""The top-level Response envelope returned by every TripIt v1 endpoint.
-
-Every read returns a `Response` whose body holds zero or more typed object
-collections plus optional `Error[]` / `Warning[]`. Pagination fields are
-present on multi-page lists.
-"""
+"""The top-level Response envelope returned by every TripIt v1 endpoint."""
 
 from __future__ import annotations
 
@@ -13,6 +8,24 @@ from typing import Any
 from pydantic import Field, field_validator
 
 from tripit.models._base import TripItModel
+from tripit.models.objects import (
+    ActivityObject,
+    AirObject,
+    CarObject,
+    CruiseObject,
+    DirectionsObject,
+    LodgingObject,
+    MapObject,
+    NoteObject,
+    ParkingObject,
+    PartnerAgency,
+    RailObject,
+    RestaurantObject,
+    TransportObject,
+    WeatherObject,
+)
+from tripit.models.points import PointsProgram
+from tripit.models.profile import Profile
 from tripit.models.trip import Trip
 
 
@@ -41,23 +54,29 @@ class Response(TripItModel):
     num_bytes: int | None = None
     errors: list[Error] = Field(default_factory=list, alias="Error")
     warnings: list[Warning] = Field(default_factory=list, alias="Warning")
+
     trips: list[Trip] = Field(default_factory=list, alias="Trip")
-    profiles: list[dict[str, Any]] = Field(default_factory=list, alias="Profile")
-    points_programs: list[dict[str, Any]] = Field(default_factory=list, alias="PointsProgram")
-    air_objects: list[dict[str, Any]] = Field(default_factory=list, alias="AirObject")
-    lodging_objects: list[dict[str, Any]] = Field(default_factory=list, alias="LodgingObject")
-    car_objects: list[dict[str, Any]] = Field(default_factory=list, alias="CarObject")
-    rail_objects: list[dict[str, Any]] = Field(default_factory=list, alias="RailObject")
-    transport_objects: list[dict[str, Any]] = Field(default_factory=list, alias="TransportObject")
-    cruise_objects: list[dict[str, Any]] = Field(default_factory=list, alias="CruiseObject")
-    restaurant_objects: list[dict[str, Any]] = Field(default_factory=list, alias="RestaurantObject")
-    activity_objects: list[dict[str, Any]] = Field(default_factory=list, alias="ActivityObject")
-    note_objects: list[dict[str, Any]] = Field(default_factory=list, alias="NoteObject")
-    map_objects: list[dict[str, Any]] = Field(default_factory=list, alias="MapObject")
-    directions_objects: list[dict[str, Any]] = Field(default_factory=list, alias="DirectionsObject")
-    parking_objects: list[dict[str, Any]] = Field(default_factory=list, alias="ParkingObject")
-    weather_objects: list[dict[str, Any]] = Field(default_factory=list, alias="WeatherObject")
-    partner_agencies: list[dict[str, Any]] = Field(default_factory=list, alias="PartnerAgency")
+    profiles: list[Profile] = Field(default_factory=list, alias="Profile")
+    points_programs: list[PointsProgram] = Field(default_factory=list, alias="PointsProgram")
+
+    air_objects: list[AirObject] = Field(default_factory=list, alias="AirObject")
+    lodging_objects: list[LodgingObject] = Field(default_factory=list, alias="LodgingObject")
+    car_objects: list[CarObject] = Field(default_factory=list, alias="CarObject")
+    rail_objects: list[RailObject] = Field(default_factory=list, alias="RailObject")
+    transport_objects: list[TransportObject] = Field(default_factory=list, alias="TransportObject")
+    cruise_objects: list[CruiseObject] = Field(default_factory=list, alias="CruiseObject")
+    restaurant_objects: list[RestaurantObject] = Field(
+        default_factory=list, alias="RestaurantObject"
+    )
+    activity_objects: list[ActivityObject] = Field(default_factory=list, alias="ActivityObject")
+    note_objects: list[NoteObject] = Field(default_factory=list, alias="NoteObject")
+    map_objects: list[MapObject] = Field(default_factory=list, alias="MapObject")
+    directions_objects: list[DirectionsObject] = Field(
+        default_factory=list, alias="DirectionsObject"
+    )
+    parking_objects: list[ParkingObject] = Field(default_factory=list, alias="ParkingObject")
+    weather_objects: list[WeatherObject] = Field(default_factory=list, alias="WeatherObject")
+    partner_agencies: list[PartnerAgency] = Field(default_factory=list, alias="PartnerAgency")
 
     page_num: int | None = None
     page_size: int | None = None

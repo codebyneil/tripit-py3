@@ -1,0 +1,39 @@
+{
+  "Response": {
+    "timestamp": 1700000000,
+    "num_bytes": 1024,
+    "AirObject": {
+      "id": 555111,
+      "trip_id": 999000111222,
+      "display_name": "AC 23",
+      "booking_date": "2026-01-15",
+      "supplier_name": "Air Canada",
+      "record_locator": "ABC123",
+      "is_purchased": "true",
+      "Segment": [
+        {
+          "id": "555111-1",
+          "StartDateTime": {
+            "date": "2026-05-01", "time": "08:00:00", "timezone": "America/Toronto"
+          },
+          "EndDateTime": {
+            "date": "2026-05-02", "time": "10:30:00", "timezone": "Asia/Tokyo"
+          },
+          "start_airport_code": "YYZ",
+          "end_airport_code": "NRT",
+          "marketing_airline_code": "AC",
+          "marketing_flight_number": "23",
+          "is_international": "true",
+          "Status": {
+            "flight_status": "301",
+            "last_modified": 1700000050
+          }
+        }
+      ],
+      "Traveler": {
+        "first_name": "Neil",
+        "last_name": "Auto"
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "Response": {
+    "timestamp": 1700000000,
+    "num_bytes": 1024,
+    "Profile": {
+      "is_client": "true",
+      "is_pro": "false",
+      "screen_name": "neilauto",
+      "public_display_name": "Neil Auto",
+      "profile_url": "/people/show/id/12345",
+      "first_name": "Neil",
+      "last_name": "Auto",
+      "home_city": "Toronto",
+      "home_country_code": "CA",
+      "home_airport": "YYZ",
+      "uuid": "abc-def-123",
+      "ProfileEmailAddresses": {
+        "ProfileEmailAddress": [
+          {
+            "uuid": "u1", "uuid_ref": "ur1",
+            "address": "neil@autumnlabs.com",
+            "is_auto_import": "true", "is_confirmed": "true"
+          }
+        ]
+      }
+    }
+  }
+}
