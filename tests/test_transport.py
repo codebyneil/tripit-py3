@@ -192,3 +192,35 @@ def test_format_json_is_always_sent() -> None:
     with _transport() as t:
         t.request_json("GET", "/v1/list/trip", params={"page_num": "1"})
     assert route.calls.last.request.url.params["format"] == "json"
+
+
+@respx.mock
+def test_request_raw_returns_wire_json_unparsed() -> None:
+    """request_raw must return the dict as-sent, including keys the pydantic models
+    would have dropped via extra="ignore"."""
+    payload_with_unknown = {
+        "Response": {
+            "timestamp": 1700000000,
+            "num_bytes": 256,
+            "Trip": [{"id": "1", "display_name": "X", "tripit_secret_future_field": "y"}],
+            "envelope_level_future_field": "z",
+        }
+    }
+    respx.get("https://api.tripit.example/v1/list/trip").mock(
+        return_value=httpx.Response(200, json=payload_with_unknown)
+    )
+    with _transport() as t:
+        raw = t.request_raw("GET", "/v1/list/trip")
+    assert raw == payload_with_unknown  # full fidelity
+
+
+@respx.mock
+def test_request_raw_still_raises_typed_errors_on_4xx(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _no_sleep_retry(monkeypatch)
+    respx.get("https://api.tripit.example/v1/list/trip").mock(
+        return_value=httpx.Response(429, headers={"retry-after": "1"}, text="slow")
+    )
+    with _transport() as t, pytest.raises(TripItRateLimitError):
+        t.request_raw("GET", "/v1/list/trip")

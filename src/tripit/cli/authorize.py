@@ -37,6 +37,25 @@ def _resolve(value: str | None, env_var: str, prompt: str, stream: TextIO) -> st
     return line
 
 
+def wait_for_manual_approval(
+    auth_url: str, *, out: TextIO | None = None, stdin: TextIO | None = None
+) -> None:
+    """Print the authorize URL and block until the user presses Enter.
+
+    Shared between the `tripit-authorize` CLI and the capture script's manual
+    fallback. Writes prompts to `out` (default stderr) so stdout stays clean
+    for piped consumers; reads a single line from `stdin` (default sys.stdin)
+    to detect the approval keypress.
+    """
+    out = out if out is not None else sys.stderr
+    stdin = stdin if stdin is not None else sys.stdin
+    out.write("\nOpen this URL in a browser and approve access:\n\n")
+    out.write(f"  {auth_url}\n\n")
+    out.write("After approving, press Enter to continue...")
+    out.flush()
+    stdin.readline()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="tripit-authorize",
@@ -78,11 +97,7 @@ def main(argv: list[str] | None = None) -> int:
             callback_url=args.callback_url,
             web_url=args.web_url,
         )
-        out.write("\nOpen this URL in a browser and approve access:\n\n")
-        out.write(f"  {auth_url}\n\n")
-        out.write("After approving, press Enter to continue...")
-        out.flush()
-        sys.stdin.readline()
+        wait_for_manual_approval(auth_url, out=out)
 
         out.write("\nExchanging for access token...\n")
         out.flush()

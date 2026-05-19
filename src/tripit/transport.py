@@ -126,6 +126,64 @@ class _Transport:
                 raise inner from exc
             raise
 
+    def request_raw(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Issue a request and return the parsed JSON dict without pydantic validation.
+
+        Used by the fixture-capture script to retain TripIt-emitted fields the
+        production parser would drop via `extra="ignore"`. Retries on the same
+        transient failures as `request_json` but skips envelope unwrapping.
+        """
+
+        @retry(
+            retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
+            wait=wait_exponential_jitter(initial=1.0, max=30.0),
+            stop=stop_after_attempt(5),
+            reraise=True,
+        )
+        def _do() -> dict[str, Any]:
+            return self._request_raw_once(method, path, params=params, data=data)
+
+        try:
+            return _do()
+        except RetryError as exc:  # pragma: no cover
+            inner = exc.last_attempt.exception()
+            if inner is not None:
+                raise inner from exc
+            raise
+
+    def _request_raw_once(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, Any] | None,
+        data: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        merged = {**(params or {}), "format": "json"}
+        try:
+            response = self._client.request(method, path, params=merged, data=data)
+        except httpx.HTTPError as exc:
+            if isinstance(exc, _RETRYABLE_EXCEPTIONS):
+                raise
+            raise TripItTransportError(
+                f"{method} {path} failed: {exc.__class__.__name__}: {exc}"
+            ) from exc
+
+        self._raise_for_status(response)
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise TripItValidationError(
+                f"response was not valid JSON: {response.text[:200]!r}"
+            ) from exc
+
     def _request_once(
         self,
         method: str,
