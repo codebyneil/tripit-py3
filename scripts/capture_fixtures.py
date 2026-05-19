@@ -59,6 +59,16 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         action="store_true",
         help="Discard the cached access token and re-run the OAuth handshake.",
     )
+    parser.add_argument(
+        "--listen-port",
+        type=int,
+        default=8765,
+        help=(
+            "Port to bind a local HTTP listener on for the OAuth callback "
+            "(default 8765). Set to 0 to disable the listener and fall back "
+            "to the two-phase manual flow."
+        ),
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging.")
     parser.add_argument(
         "--dry-run",
@@ -90,7 +100,12 @@ def main(argv: list[str] | None = None) -> int:
     tokens = clear_tokens() if args.refresh_oauth else load_tokens()
 
     try:
-        tokens, _ = ensure_access_token(creds, tokens, force=args.refresh_oauth)
+        tokens, _ = ensure_access_token(
+            creds,
+            tokens,
+            force=args.refresh_oauth,
+            listen_port=args.listen_port or None,
+        )
     except OAuthApprovalRequired as need:
         # Print friendly instructions on stdout, exit 0 so the user can
         # clearly see what to do next.

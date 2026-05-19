@@ -1,27 +1,39 @@
-"""Two-phase 3-legged OAuth dance with separate token cache.
+"""OAuth dance variants: localhost listener (primary), then two-phase fallback.
 
-The capture script may run non-interactively (no TTY-backed stdin), so we
-can't block on `readline()` waiting for the user to press Enter after a
-browser approval. Instead we split the dance across runs:
+There are three ways to complete the user-approval step:
 
-  - **Phase 1** (no pending RT cached): fetch a fresh request token, save
-    it to `tripit_tokens.json`, raise `OAuthApprovalRequired` with the
-    authorize URL. The caller exits 0 with friendly instructions.
-  - **Phase 2** (pending RT cached): try to exchange the stored request
-    token for an access token. Success → cache AT, clear pending RT,
-    continue. Failure → re-raise `OAuthApprovalRequired` with the *same*
-    URL (the user just hasn't approved yet, or approved a stale token);
-    do **not** mint a new request token unless `--refresh-oauth` is set.
+  1. **Localhost listener** (preferred). Caller registers
+     `http://localhost:<port>/callback` as a redirect URI on the TripIt
+     developer console, then runs the capture script with that URL as the
+     `oauth_callback`. The script opens the authorize URL in the user's
+     browser and blocks on a tiny local HTTP server until TripIt redirects
+     the browser back with `oauth_token` + `oauth_verifier`. Synchronous
+     end-to-end — no manual copy/paste, no re-runs.
+  2. **Programmatic login** (best-effort). `programmatic_login.py` tries
+     to do the browser approval via httpx scraping. Usually blocked by
+     Akamai Bot Manager today, but if it ever works the script captures
+     in one go.
+  3. **Two-phase manual** (last resort). Mint RT, exit, user approves in
+     browser at their own pace, re-run to exchange. Used when no listener
+     port is given and programmatic login fails.
 
-If `programmatic_login.approve_request_token()` succeeds inside phase 1,
-phase 2 collapses into the same run with no user action needed.
+If `programmatic_login.approve_request_token()` succeeds, phase 2 collapses
+into the same run with no user action needed.
 """
 
 from __future__ import annotations
 
+import contextlib
 import logging
+import subprocess
+import sys
 
 from scripts._capture.credentials import Credentials
+from scripts._capture.local_listener import (
+    DEFAULT_PORT,
+    CallbackTimeout,
+    wait_for_callback,
+)
 from scripts._capture.programmatic_login import approve_request_token
 from scripts._capture.tokens import (
     Tokens,
@@ -48,6 +60,13 @@ class OAuthApprovalRequired(RuntimeError):
         self.reason = reason
 
 
+def _open_in_browser(url: str) -> None:
+    """Best-effort: open `url` in the system default browser."""
+    if sys.platform == "darwin":
+        with contextlib.suppress(OSError, subprocess.TimeoutExpired):
+            subprocess.run(["open", url], check=False, timeout=5)
+
+
 def ensure_access_token(
     creds: Credentials,
     tokens: Tokens,
@@ -55,6 +74,8 @@ def ensure_access_token(
     force: bool = False,
     api_url: str = "https://api.tripit.com",
     web_url: str = "https://www.tripit.com",
+    listen_port: int | None = DEFAULT_PORT,
+    callback_url: str | None = None,
 ) -> tuple[Tokens, AccessToken]:
     """Return a usable (tokens, access_token) pair, doing the OAuth dance if needed.
 
@@ -108,9 +129,19 @@ def ensure_access_token(
             logger.info("Access token cached to tripit_tokens.json")
             return tokens, access_token
 
-    # Phase 1: get a fresh request token.
-    logger.info("Fetching request token...")
-    request_token = get_request_token(creds.consumer_key, creds.consumer_secret, api_url=api_url)
+    # Phase 1: get a fresh request token. If we have a callback, register it
+    # with TripIt so the issued token is bound to it.
+    effective_callback = callback_url
+    if effective_callback is None and listen_port is not None:
+        effective_callback = f"http://127.0.0.1:{listen_port}/callback"
+
+    logger.info("Fetching request token (oauth_callback=%s)...", effective_callback)
+    request_token = get_request_token(
+        creds.consumer_key,
+        creds.consumer_secret,
+        oauth_callback=effective_callback,
+        api_url=api_url,
+    )
 
     logger.info("Attempting programmatic OAuth approval...")
     if approve_request_token(creds, request_token.oauth_token, web_url=web_url):
@@ -129,8 +160,54 @@ def ensure_access_token(
         )
         return tokens, access_token
 
-    # Programmatic approval failed (e.g. Akamai blocked it). Save the request
-    # token to the tokens file and hand control back.
+    # Localhost listener flow — open the URL, block on the callback.
+    if listen_port is not None and effective_callback and "127.0.0.1" in effective_callback:
+        auth_url = authorization_url(request_token.oauth_token, web_url=web_url)
+        logger.info(
+            "Opening authorize URL in browser; listening on port %d...",
+            listen_port,
+        )
+        sys.stderr.write(
+            f"\nIf your browser doesn't open automatically, paste this URL:\n  {auth_url}\n\n"
+        )
+        _open_in_browser(auth_url)
+        try:
+            params = wait_for_callback(port=listen_port, timeout=300.0)
+        except CallbackTimeout as exc:
+            tokens = save_pending_request_token(
+                tokens,
+                request_token=request_token.oauth_token,
+                request_token_secret=request_token.oauth_token_secret,
+            )
+            raise OAuthApprovalRequired(
+                auth_url, reason=f"local listener timed out: {exc}"
+            ) from exc
+
+        if params.get("oauth_token") != request_token.oauth_token:
+            logger.warning(
+                "Callback oauth_token %r != request token %r; exchanging anyway",
+                params.get("oauth_token"),
+                request_token.oauth_token,
+            )
+        oauth_verifier = params.get("oauth_verifier")
+
+        logger.info("Exchanging request token for access token...")
+        access_token = get_access_token(
+            creds.consumer_key,
+            creds.consumer_secret,
+            request_token.oauth_token,
+            request_token.oauth_token_secret,
+            oauth_verifier=oauth_verifier,
+            api_url=api_url,
+        )
+        tokens = save_access_token(
+            tokens,
+            access_token=access_token.oauth_token,
+            access_token_secret=access_token.oauth_token_secret,
+        )
+        return tokens, access_token
+
+    # No listener — fall back to two-phase manual.
     tokens = save_pending_request_token(
         tokens,
         request_token=request_token.oauth_token,

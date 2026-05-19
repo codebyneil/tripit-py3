@@ -158,6 +158,7 @@ def _exchange_token(
     *,
     token: str | None = None,
     token_secret: str | None = None,
+    body: dict[str, str] | None = None,
     api_url: str = DEFAULT_API_URL,
 ) -> dict[str, str]:
     auth = OAuth1Auth(
@@ -171,7 +172,10 @@ def _exchange_token(
     # too, but the issued tokens may be flagged differently downstream — the
     # browser-facing /oauth/authorize page rejects RTs minted that way.)
     with httpx.Client(timeout=30.0) as client:
-        response = client.post(f"{api_url}{path}", auth=auth)
+        if body:
+            response = client.post(f"{api_url}{path}", data=body, auth=auth)
+        else:
+            response = client.post(f"{api_url}{path}", auth=auth)
     if response.status_code != 200:
         from tripit.exceptions import TripItAuthError
 
@@ -184,10 +188,27 @@ def _exchange_token(
 
 
 def get_request_token(
-    consumer_key: str, consumer_secret: str, *, api_url: str = DEFAULT_API_URL
+    consumer_key: str,
+    consumer_secret: str,
+    *,
+    oauth_callback: str | None = None,
+    api_url: str = DEFAULT_API_URL,
 ) -> RequestToken:
-    """First leg of the OAuth 1.0a flow: obtain an unauthorized request token."""
-    data = _exchange_token(consumer_key, consumer_secret, _REQUEST_TOKEN_PATH, api_url=api_url)
+    """First leg of the OAuth 1.0a flow: obtain an unauthorized request token.
+
+    If `oauth_callback` is provided it's sent as a form parameter (and thus
+    participates in the OAuth signature). TripIt requires the callback to
+    match one of the redirect URIs registered on the developer console, or
+    the issued token is silently flagged unusable by /oauth/authorize.
+    """
+    body = {"oauth_callback": oauth_callback} if oauth_callback else None
+    data = _exchange_token(
+        consumer_key,
+        consumer_secret,
+        _REQUEST_TOKEN_PATH,
+        body=body,
+        api_url=api_url,
+    )
     return RequestToken(
         oauth_token=data["oauth_token"],
         oauth_token_secret=data["oauth_token_secret"],
@@ -213,15 +234,22 @@ def get_access_token(
     request_token: str,
     request_token_secret: str,
     *,
+    oauth_verifier: str | None = None,
     api_url: str = DEFAULT_API_URL,
 ) -> AccessToken:
-    """Final leg of the OAuth 1.0a flow: exchange a user-authorized request token."""
+    """Final leg of the OAuth 1.0a flow: exchange a user-authorized request token.
+
+    Pass `oauth_verifier` if TripIt issued one during the redirect after user
+    approval — required for true OAuth 1.0a flows.
+    """
+    body = {"oauth_verifier": oauth_verifier} if oauth_verifier else None
     data = _exchange_token(
         consumer_key,
         consumer_secret,
         _ACCESS_TOKEN_PATH,
         token=request_token,
         token_secret=request_token_secret,
+        body=body,
         api_url=api_url,
     )
     return AccessToken(
