@@ -31,7 +31,10 @@ from scripts._capture.credentials import (  # noqa: E402
     load_credentials,
 )
 from scripts._capture.endpoints import discovery_pass, iter_capture_specs  # noqa: E402
-from scripts._capture.oauth_setup import ensure_access_token  # noqa: E402
+from scripts._capture.oauth_setup import (  # noqa: E402
+    OAuthApprovalRequired,
+    ensure_access_token,
+)
 from scripts._capture.scrub import scrub  # noqa: E402
 from tripit import TripIt  # noqa: E402
 
@@ -85,6 +88,21 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         creds, _ = ensure_access_token(creds, force=args.refresh_oauth)
+    except OAuthApprovalRequired as need:
+        # Phase 1: print friendly instructions on stdout, exit 0 so the user
+        # can clearly see what to do next.
+        sys.stdout.write(
+            "\n"
+            "OAuth approval required — TripIt's Akamai bot detection blocks\n"
+            "scripted login. Complete the dance manually:\n\n"
+            f"  1. Open this URL in your browser:\n     {need.auth_url}\n\n"
+            "  2. Click 'Approve' on the TripIt page.\n"
+            "  3. Re-run this command. The script will exchange the\n"
+            "     approved request token for an access token and capture.\n\n"
+            "The request token has been saved to tripit_creds.json — you\n"
+            "don't need to keep this terminal open.\n"
+        )
+        return 0
     except Exception as exc:
         log.error("OAuth handshake failed: %s", exc)
         return 2

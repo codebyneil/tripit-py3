@@ -45,6 +45,8 @@ _FILE_KEY_ALIASES = {
     "password": "password",
     "access_token": "access_token",
     "access_token_secret": "access_token_secret",
+    "pending_request_token": "pending_request_token",
+    "pending_request_token_secret": "pending_request_token_secret",
 }
 
 
@@ -56,6 +58,11 @@ class Credentials:
     password: str
     access_token: str | None = None
     access_token_secret: str | None = None
+    # Cached between the two halves of the 3-legged OAuth dance: step 1 stores
+    # the request token here so step 2 can pick it up after the user has
+    # approved in their browser.
+    pending_request_token: str | None = None
+    pending_request_token_secret: str | None = None
 
 
 class MissingCredentialsError(RuntimeError):
@@ -80,8 +87,17 @@ def load_credentials(path: Path = CREDS_PATH) -> Credentials:
                 file_data[canonical] = value
 
     resolved: dict[str, str | None] = {}
-    for field in (*_REQUIRED_FIELDS, "access_token", "access_token_secret"):
-        value = file_data.get(field) or os.environ.get(_ENV_NAMES[field])
+    cached_fields = (
+        "access_token",
+        "access_token_secret",
+        "pending_request_token",
+        "pending_request_token_secret",
+    )
+    for field in (*_REQUIRED_FIELDS, *cached_fields):
+        env_var = _ENV_NAMES.get(field)
+        value = file_data.get(field)
+        if not value and env_var is not None:
+            value = os.environ.get(env_var)
         resolved[field] = value or None
 
     missing = [f for f in _REQUIRED_FIELDS if not resolved[f]]
@@ -101,6 +117,8 @@ def load_credentials(path: Path = CREDS_PATH) -> Credentials:
         password=resolved["password"] or "",
         access_token=resolved["access_token"],
         access_token_secret=resolved["access_token_secret"],
+        pending_request_token=resolved["pending_request_token"],
+        pending_request_token_secret=resolved["pending_request_token_secret"],
     )
 
 
@@ -111,11 +129,35 @@ def save_access_token(
     access_token_secret: str,
     path: Path = CREDS_PATH,
 ) -> Credentials:
-    """Persist the cached access token back to `.tripit-creds.json` (chmod 0600).
-
-    Returns a new `Credentials` instance with the token fields filled in.
-    """
-    updated = replace(creds, access_token=access_token, access_token_secret=access_token_secret)
-    path.write_text(json.dumps(asdict(updated), indent=2) + "\n")
-    path.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0600
+    """Persist the access token + clear any pending request token (chmod 0600)."""
+    updated = replace(
+        creds,
+        access_token=access_token,
+        access_token_secret=access_token_secret,
+        pending_request_token=None,
+        pending_request_token_secret=None,
+    )
+    _write_creds(path, updated)
     return updated
+
+
+def save_pending_request_token(
+    creds: Credentials,
+    *,
+    request_token: str,
+    request_token_secret: str,
+    path: Path = CREDS_PATH,
+) -> Credentials:
+    """Stash a request token between steps 1 and 2 of the OAuth dance."""
+    updated = replace(
+        creds,
+        pending_request_token=request_token,
+        pending_request_token_secret=request_token_secret,
+    )
+    _write_creds(path, updated)
+    return updated
+
+
+def _write_creds(path: Path, creds: Credentials) -> None:
+    path.write_text(json.dumps(asdict(creds), indent=2) + "\n")
+    path.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0600
