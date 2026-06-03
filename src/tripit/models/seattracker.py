@@ -126,9 +126,7 @@ class ITAircraftSeatMapSection(TripItModel, tag="ITAircraftSeatMapSection"):
     column_header: str = element()
     number: int = element()
     is_upper_deck: bool = element()
-    rows_wrapper: _ITAircraftSeatMapRows | None = element(
-        tag="ITAircraftSeatMapRows", default=None
-    )
+    rows_wrapper: _ITAircraftSeatMapRows | None = element(tag="ITAircraftSeatMapRows", default=None)
 
 
 class _ITAircraftSeatMapSections(TripItModel, tag="ITAircraftSeatMapSections"):

@@ -87,7 +87,7 @@ def test_get_trip_uses_path_form_id() -> None:
 
 @respx.mock
 def test_get_trip_with_no_results_raises_not_found() -> None:
-    empty = b'<Response><timestamp>1</timestamp><num_bytes>1</num_bytes></Response>'
+    empty = b"<Response><timestamp>1</timestamp><num_bytes>1</num_bytes></Response>"
     respx.get("https://api.tripit.example/v1/get/trip/id/nonexistent").mock(
         return_value=httpx.Response(200, content=empty)
     )

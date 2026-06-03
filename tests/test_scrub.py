@@ -21,7 +21,7 @@ from scripts._capture.scrub import scrub, scrub_xml  # noqa: E402
 
 def test_scrub_xml_redacts_pii_and_preserves_signal() -> None:
     xml = (
-        '<Response><timestamp>1</timestamp><num_bytes>1</num_bytes>'
+        "<Response><timestamp>1</timestamp><num_bytes>1</num_bytes>"
         '<Profile ref="r">'
         "<ProfileEmailAddress><address>neil@real.com</address>"
         "<is_primary>true</is_primary></ProfileEmailAddress>"

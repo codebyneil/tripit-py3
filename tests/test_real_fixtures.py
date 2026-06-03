@@ -24,9 +24,7 @@ from tripit.models import Response
 XML_DIR = Path(__file__).parent / "fixtures" / "xml"
 OBJ_XSD = Path(__file__).parent.parent / "src" / "tripit" / "schemas" / "tripit-api-obj-v1.xsd"
 
-GOOD_FIXTURES = sorted(
-    p for p in XML_DIR.glob("*.xml") if p.name != "air_with_unknown_element.xml"
-)
+GOOD_FIXTURES = sorted(p for p in XML_DIR.glob("*.xml") if p.name != "air_with_unknown_element.xml")
 
 # XSD complexTypes we deliberately don't model: collaboration / request-action
 # shapes (see docs/README.md "Coverage & intentional exclusions").
@@ -57,9 +55,7 @@ def _xsd_complex_types() -> set[str]:
     tree = etree.parse(str(OBJ_XSD))
     ns = {"xs": "http://www.w3.org/2001/XMLSchema"}
     return {
-        el.get("name")
-        for el in tree.findall(".//xs:complexType", ns)
-        if el.get("name") is not None
+        el.get("name") for el in tree.findall(".//xs:complexType", ns) if el.get("name") is not None
     }
 
 

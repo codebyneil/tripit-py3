@@ -184,9 +184,7 @@ def iter_capture_specs(
 
     # 3. Trips
     yield from emit(
-        CaptureSpec(
-            "GET", "/v1/list/trip", filename="real_list_trip_upcoming.xml", category="trip"
-        )
+        CaptureSpec("GET", "/v1/list/trip", filename="real_list_trip_upcoming.xml", category="trip")
     )
     yield from emit(
         CaptureSpec(
@@ -254,5 +252,3 @@ def iter_capture_specs(
                 category="object",
             )
         )
-
-
