@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000300</timestamp>
+  <num_bytes>1536</num_bytes>
+  <Profile ref="C0FFEE">
+    <ProfileEmailAddresses>
+      <ProfileEmailAddress>
+        <uuid>aaaaaaaa-bbbb-9ccc-dddd-eeeeeeeeeeee</uuid>
+        <uuid_ref>11111111-2222-9333-4444-555555555555</uuid_ref>
+        <address>neil@example.com</address>
+        <is_auto_import>true</is_auto_import>
+        <is_confirmed>true</is_confirmed>
+        <is_primary>true</is_primary>
+      </ProfileEmailAddress>
+    </ProfileEmailAddresses>
+    <is_client>true</is_client>
+    <is_pro>true</is_pro>
+    <screen_name>neiltraveler</screen_name>
+    <public_display_name>Neil Traveler</public_display_name>
+    <profile_url>/people/neiltraveler</profile_url>
+    <home_city>Seattle, WA</home_city>
+    <home_airport>SEA</home_airport>
+    <company>Autumn Labs</company>
+  </Profile>
+</Response>

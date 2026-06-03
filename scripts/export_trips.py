@@ -6,6 +6,10 @@ Different from `capture_fixtures.py`:
 - Includes the full envelope for both upcoming and past trips with all
   nested objects, plus profile + points programs.
 
+The API speaks XML; to preserve verbatim fidelity (including any out-of-schema
+elements that strict parsing would reject) the raw XML payloads are embedded as
+strings inside the JSON wrapper.
+
 Usage:
     uv run python scripts/export_trips.py
     uv run python scripts/export_trips.py --output ~/Desktop/trips-backup.json
@@ -20,7 +24,8 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+
+from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
@@ -78,17 +83,18 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _paginate_raw(client: TripIt, path: str, base_params: dict[str, str]) -> list[dict[str, Any]]:
-    """Fetch every page of a list endpoint, returning the raw envelopes."""
-    pages: list[dict[str, Any]] = []
+def _paginate_raw(client: TripIt, path: str, base_params: dict[str, str]) -> list[str]:
+    """Fetch every page of a list endpoint, returning the raw XML page bodies."""
+    pages: list[str] = []
     page = 1
     while True:
         params = {**base_params, "page_num": str(page)}
         raw = client._transport.request_raw("GET", path, params=params)
-        envelope = raw.get("Response", raw)
-        pages.append(envelope)
-        max_page = envelope.get("max_page")
-        if not isinstance(max_page, int) or page >= max_page:
+        pages.append(raw)
+        root = etree.fromstring(raw.encode("utf-8"))
+        max_page_text = root.findtext("max_page")
+        max_page = int(max_page_text) if max_page_text and max_page_text.isdigit() else None
+        if max_page is None or page >= max_page:
             return pages
         page += 1
 
@@ -152,10 +158,10 @@ def main(argv: list[str] | None = None) -> int:
     payload = {
         "exported_at": _dt.datetime.now(_dt.UTC).isoformat(),
         "consumer_key": creds.consumer_key,
-        "profile": profile_raw.get("Response", profile_raw),
-        "points_programs": points_raw.get("Response", points_raw),
-        "trips_upcoming": upcoming_pages,
-        "trips_past": past_pages,
+        "profile_xml": profile_raw,
+        "points_programs_xml": points_raw,
+        "trips_upcoming_xml": upcoming_pages,
+        "trips_past_xml": past_pages,
     }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -178,14 +184,10 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _count_trips(envelope: dict[str, Any]) -> int:
-    """Count trips in an envelope, tolerating single-vs-list collapse."""
-    trips = envelope.get("Trip")
-    if trips is None:
-        return 0
-    if isinstance(trips, list):
-        return len(trips)
-    return 1
+def _count_trips(xml_page: str) -> int:
+    """Count <Trip> elements in a raw XML page body."""
+    root = etree.fromstring(xml_page.encode("utf-8"))
+    return len(root.findall("Trip"))
 
 
 if __name__ == "__main__":

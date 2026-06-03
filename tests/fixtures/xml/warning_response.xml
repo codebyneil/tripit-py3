@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000600</timestamp>
+  <num_bytes>512</num_bytes>
+  <Warning>
+    <description>Partial data returned</description>
+    <entity_type>Trip</entity_type>
+    <timestamp>2025-09-01T12:05:00</timestamp>
+  </Warning>
+  <Trip>
+    <id>333</id>
+    <display_name>Partial Trip</display_name>
+  </Trip>
+</Response>

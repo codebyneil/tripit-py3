@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000200</timestamp>
+  <num_bytes>4096</num_bytes>
+  <AirObject>
+    <id>900100</id>
+    <trip_id>111</trip_id>
+    <is_client_traveler>true</is_client_traveler>
+    <relative_url>/reservation/show/id/900100</relative_url>
+    <display_name>AS 12 SEA to JFK</display_name>
+    <supplier_name>Alaska Airlines</supplier_name>
+    <record_locator>ABC123</record_locator>
+    <is_purchased>true</is_purchased>
+    <booking_date>2025-06-01</booking_date>
+    <Segment>
+      <Status>
+        <flight_status>301</flight_status>
+        <is_connection_at_risk>false</is_connection_at_risk>
+        <last_modified>1699990000</last_modified>
+      </Status>
+      <StartDateTime>
+        <date>2025-09-01</date>
+        <time>08:00:00</time>
+        <timezone>America/Los_Angeles</timezone>
+        <utc_offset>-07:00</utc_offset>
+      </StartDateTime>
+      <EndDateTime>
+        <date>2025-09-01</date>
+        <time>16:30:00</time>
+        <timezone>America/New_York</timezone>
+        <utc_offset>-04:00</utc_offset>
+      </EndDateTime>
+      <start_airport_code>SEA</start_airport_code>
+      <start_airport_latitude>47.443839</start_airport_latitude>
+      <start_airport_longitude>-122.301732</start_airport_longitude>
+      <end_airport_code>JFK</end_airport_code>
+      <marketing_airline>Alaska Airlines</marketing_airline>
+      <marketing_airline_code>AS</marketing_airline_code>
+      <marketing_flight_number>12</marketing_flight_number>
+      <aircraft>737</aircraft>
+      <seats>14C</seats>
+      <service_class>Economy</service_class>
+      <is_hidden>false</is_hidden>
+      <id>900101</id>
+      <is_international>false</is_international>
+    </Segment>
+    <Traveler>
+      <first_name>Neil</first_name>
+      <last_name>Traveler</last_name>
+      <ticket_num>0272101234567</ticket_num>
+    </Traveler>
+  </AirObject>
+</Response>

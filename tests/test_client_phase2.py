@@ -1,10 +1,8 @@
-"""End-to-end tests for the Phase 2 read methods."""
+"""End-to-end tests for profile / points / object read methods."""
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import Any
 
 import httpx
 import pytest
@@ -13,11 +11,11 @@ import respx
 from tripit import TripIt
 from tripit.exceptions import TripItNotFoundError
 
-FIXTURES = Path(__file__).parent / "fixtures" / "json"
+XML = Path(__file__).parent / "fixtures" / "xml"
 
 
-def _load(name: str) -> Any:
-    return json.loads((FIXTURES / name).read_text())
+def _load(name: str) -> bytes:
+    return (XML / name).read_bytes()
 
 
 def _client() -> TripIt:
@@ -33,19 +31,19 @@ def _client() -> TripIt:
 @respx.mock
 def test_get_profile() -> None:
     respx.get("https://api.tripit.example/v1/get/profile").mock(
-        return_value=httpx.Response(200, json=_load("get_profile.json"))
+        return_value=httpx.Response(200, content=_load("get_profile.xml"))
     )
     with _client() as c:
-        profile = c.get_profile()
-    assert profile.screen_name == "neilauto"
-    assert profile.home_airport == "YYZ"
+        prof = c.get_profile()
+    assert prof.screen_name == "neiltraveler"
+    assert prof.home_airport == "SEA"
 
 
 @respx.mock
 def test_get_profile_missing_raises_not_found() -> None:
-    empty = {"Response": {"timestamp": 1, "num_bytes": 1}}
+    empty = b"<Response><timestamp>1</timestamp><num_bytes>1</num_bytes></Response>"
     respx.get("https://api.tripit.example/v1/get/profile").mock(
-        return_value=httpx.Response(200, json=empty)
+        return_value=httpx.Response(200, content=empty)
     )
     with _client() as c, pytest.raises(TripItNotFoundError):
         c.get_profile()
@@ -53,64 +51,44 @@ def test_get_profile_missing_raises_not_found() -> None:
 
 @respx.mock
 def test_get_air_returns_typed_air_object() -> None:
-    respx.get("https://api.tripit.example/v1/get/air/id/555111").mock(
-        return_value=httpx.Response(200, json=_load("get_air.json"))
+    respx.get("https://api.tripit.example/v1/get/air/id/900100").mock(
+        return_value=httpx.Response(200, content=_load("get_air.xml"))
     )
     with _client() as c:
-        air = c.get_air("555111")
-    assert air.id == "555111"
-    assert air.supplier_name == "Air Canada"
-    assert len(air.segments) == 1
+        air = c.get_air("900100")
+    assert air.id == "900100"
+    assert air.segments[0].start_airport_code == "SEA"
 
 
 @respx.mock
 def test_list_points_programs_returns_list() -> None:
     respx.get("https://api.tripit.example/v1/list/points_program").mock(
-        return_value=httpx.Response(200, json=_load("list_points_program.json"))
+        return_value=httpx.Response(200, content=_load("list_points_program.xml"))
     )
     with _client() as c:
         programs = c.list_points_programs()
-    assert [p.name for p in programs] == ["Aeroplan", "Marriott Bonvoy"]
+    assert [p.name for p in programs] == ["Alaska Mileage Plan", "Marriott Bonvoy"]
 
 
 @respx.mock
 def test_get_points_program_single() -> None:
-    single = {"Response": {"PointsProgram": {"id": "111", "name": "Aeroplan", "balance": "85000"}}}
-    respx.get("https://api.tripit.example/v1/get/points_program/id/111").mock(
-        return_value=httpx.Response(200, json=single)
+    respx.get("https://api.tripit.example/v1/get/points_program/id/5001").mock(
+        return_value=httpx.Response(200, content=_load("list_points_program.xml"))
     )
     with _client() as c:
-        prog = c.get_points_program("111")
-    assert prog.name == "Aeroplan"
+        program = c.get_points_program("5001")
+    assert program.id == "5001"
 
 
 @respx.mock
-def test_list_objects_envelope_iterates_pages() -> None:
-    p1 = {
-        "Response": {
-            "page_num": 1,
-            "page_size": 25,
-            "max_page": 2,
-            "AirObject": {"id": "1", "display_name": "AC 23"},
-            "LodgingObject": [{"id": "2", "supplier_name": "Hilton"}],
-        }
-    }
-    p2 = {
-        "Response": {
-            "page_num": 2,
-            "page_size": 25,
-            "max_page": 2,
-            "CarObject": {"id": "3", "supplier_name": "Hertz"},
-        }
-    }
-    route = respx.get("https://api.tripit.example/v1/list/object")
-    route.side_effect = [
-        httpx.Response(200, json=p1),
-        httpx.Response(200, json=p2),
-    ]
+def test_list_objects_envelope_yields_mixed_types() -> None:
+    respx.get("https://api.tripit.example/v1/list/object").mock(
+        return_value=httpx.Response(200, content=_load("list_object_mixed.xml"))
+    )
     with _client() as c:
-        envelopes = list(c.list_objects_envelope(trip_id="999"))
-    assert len(envelopes) == 2
-    assert envelopes[0].air_objects[0].display_name == "AC 23"
-    assert envelopes[0].lodging_objects[0].supplier_name == "Hilton"
-    assert envelopes[1].car_objects[0].supplier_name == "Hertz"
+        pages = list(c.list_objects_envelope(type="all"))
+    assert len(pages) == 1
+    env = pages[0]
+    assert len(env.air_objects) == 1
+    assert len(env.lodging_objects) == 1
+    assert len(env.car_objects) == 1

@@ -12,7 +12,8 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Any
+
+from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
 
 from tripit import TripIt
 from tripit.exceptions import TripItError
@@ -36,20 +37,20 @@ OBJECT_TYPES: tuple[str, ...] = (
     "parking",
 )
 
-# Maps Response.<attr> -> object-type name for harvesting IDs from include_objects=true responses.
-_OBJECT_FIELDS = {
-    "air_objects": "air",
-    "lodging_objects": "lodging",
-    "car_objects": "car",
-    "rail_objects": "rail",
-    "transport_objects": "transport",
-    "cruise_objects": "cruise",
-    "restaurant_objects": "restaurant",
-    "activity_objects": "activity",
-    "note_objects": "note",
-    "map_objects": "map",
-    "directions_objects": "directions",
-    "parking_objects": "parking",
+# Maps the XML object element name -> object-type name for harvesting IDs.
+_OBJECT_ELEMENTS = {
+    "AirObject": "air",
+    "LodgingObject": "lodging",
+    "CarObject": "car",
+    "RailObject": "rail",
+    "TransportObject": "transport",
+    "CruiseObject": "cruise",
+    "RestaurantObject": "restaurant",
+    "ActivityObject": "activity",
+    "NoteObject": "note",
+    "MapObject": "map",
+    "DirectionsObject": "directions",
+    "ParkingObject": "parking",
 }
 
 
@@ -60,7 +61,7 @@ class CaptureSpec:
     method: str  # always "GET" today
     path: str  # e.g. "/v1/get/trip/id/12345"
     params: dict[str, str] = field(default_factory=dict)
-    filename: str = ""  # e.g. "real_get_trip.json"
+    filename: str = ""  # e.g. "real_get_trip.xml"
     category: str = ""  # "profile" | "points" | "trip" | "object" | "list_object"
 
 
@@ -83,63 +84,61 @@ def discovery_pass(client: TripIt) -> DiscoveryResult:
     """
     result = DiscoveryResult()
 
-    # Helper: pluck trip IDs + object IDs from a single Response envelope.
-    def _harvest_from(envelope: Any) -> None:
-        for trip in getattr(envelope, "trips", []) or []:
-            tid = getattr(trip, "id", None)
+    def _harvest_xml(xml_text: str) -> None:
+        """Pluck trip + object IDs from a raw XML Response (no strict parsing).
+
+        Discovery reads raw so it tolerates the out-of-schema elements that
+        strict parsing rejects — capturing those is the whole point.
+        """
+        root = etree.fromstring(xml_text.encode("utf-8"))
+        for trip in root.findall("Trip"):
+            tid = trip.findtext("id")
             if tid and tid not in result.trip_ids:
                 result.trip_ids.append(tid)
-        for attr, type_name in _OBJECT_FIELDS.items():
+        for elem_name, type_name in _OBJECT_ELEMENTS.items():
             bucket = result.object_ids_by_type.setdefault(type_name, [])
-            for obj in getattr(envelope, attr, []) or []:
-                oid = getattr(obj, "id", None)
+            for obj in root.findall(elem_name):
+                oid = obj.findtext("id")
                 if oid and oid not in bucket:
                     bucket.append(oid)
 
-    # list/trip?include_objects=true (upcoming + past) returns the full
-    # envelope. Use list_trips_envelope-style iteration via the transport
-    # directly, since the typed client's list_trips() drops nested objects.
+    def _get_raw(path: str, params: dict[str, str]) -> str | None:
+        try:
+            return client._transport.request_raw("GET", path, params=params)
+        except TripItError as exc:
+            logger.warning("discovery %s %s failed: %s", path, params, exc)
+            return None
+
+    # list/trip?include_objects=true (upcoming + past) returns Trip[] plus every
+    # nested object collection in one envelope.
     for past in (False, True):
-        params = {
-            "page_size": "25",
-            "include_objects": "true",
-            "page_num": "1",
-        }
+        params = {"page_size": "25", "include_objects": "true", "page_num": "1"}
         if past:
             params["past"] = "true"
-        try:
-            raw = client._transport.request_raw("GET", "/v1/list/trip", params=params)
-        except TripItError as exc:
-            logger.warning("list/trip include_objects (past=%s) failed: %s", past, exc)
-            continue
-        try:
-            from tripit.models.envelope import Response
+        raw = _get_raw("/v1/list/trip", params)
+        if raw is not None:
+            _harvest_xml(raw)
 
-            envelope = Response.model_validate(raw.get("Response", raw))
-        except Exception as exc:
-            logger.warning("Couldn't parse list/trip envelope (past=%s): %s", past, exc)
-            continue
-        _harvest_from(envelope)
-
-    # Also call list/object directly (past + upcoming) — catches objects
-    # not nested under a trip in include_objects responses.
+    # Also call list/object directly (past + upcoming) — catches objects not
+    # nested under a trip in include_objects responses.
     for past in (False, True):
-        try:
-            for envelope in client.list_objects_envelope(past=past, page_size=25):
-                _harvest_from(envelope)
-        except TripItError as exc:
-            logger.warning("list_objects discovery (past=%s) failed: %s", past, exc)
+        params = {"page_size": "25", "page_num": "1"}
+        if past:
+            params["past"] = "true"
+        raw = _get_raw("/v1/list/object", params)
+        if raw is not None:
+            _harvest_xml(raw)
 
     # Points programs — TripIt Pro only; tolerate failure.
-    try:
-        programs = client.list_points_programs()
-        result.is_pro = True
+    raw = _get_raw("/v1/list/points_program", {})
+    if raw is not None:
+        root = etree.fromstring(raw.encode("utf-8"))
+        programs = root.findall("PointsProgram")
+        result.is_pro = bool(programs)
         for prog in programs:
-            if prog.id:
-                result.points_program_ids.append(prog.id)
-    except TripItError as exc:
-        logger.info("list_points_programs unavailable (non-Pro account?): %s", exc)
-        result.is_pro = False
+            pid = prog.findtext("id")
+            if pid:
+                result.points_program_ids.append(pid)
 
     return result
 
@@ -159,7 +158,7 @@ def iter_capture_specs(
 
     # 1. Profile (always)
     yield from emit(
-        CaptureSpec("GET", "/v1/get/profile", filename="real_get_profile.json", category="profile")
+        CaptureSpec("GET", "/v1/get/profile", filename="real_get_profile.xml", category="profile")
     )
 
     # 2. Points programs (Pro only)
@@ -168,7 +167,7 @@ def iter_capture_specs(
             CaptureSpec(
                 "GET",
                 "/v1/list/points_program",
-                filename="real_list_points_program.json",
+                filename="real_list_points_program.xml",
                 category="points",
             )
         )
@@ -178,7 +177,7 @@ def iter_capture_specs(
                 CaptureSpec(
                     "GET",
                     f"/v1/get/points_program/id/{first}",
-                    filename="real_get_points_program.json",
+                    filename="real_get_points_program.xml",
                     category="points",
                 )
             )
@@ -186,7 +185,7 @@ def iter_capture_specs(
     # 3. Trips
     yield from emit(
         CaptureSpec(
-            "GET", "/v1/list/trip", filename="real_list_trip_upcoming.json", category="trip"
+            "GET", "/v1/list/trip", filename="real_list_trip_upcoming.xml", category="trip"
         )
     )
     yield from emit(
@@ -194,7 +193,7 @@ def iter_capture_specs(
             "GET",
             "/v1/list/trip",
             params={"past": "true"},
-            filename="real_list_trip_past.json",
+            filename="real_list_trip_past.xml",
             category="trip",
         )
     )
@@ -203,7 +202,7 @@ def iter_capture_specs(
             "GET",
             "/v1/list/trip",
             params={"include_objects": "true"},
-            filename="real_list_trip_with_objects.json",
+            filename="real_list_trip_with_objects.xml",
             category="trip",
         )
     )
@@ -213,7 +212,7 @@ def iter_capture_specs(
             CaptureSpec(
                 "GET",
                 f"/v1/get/trip/id/{first}",
-                filename="real_get_trip.json",
+                filename="real_get_trip.xml",
                 category="trip",
             )
         )
@@ -222,7 +221,7 @@ def iter_capture_specs(
                 "GET",
                 f"/v1/get/trip/id/{first}",
                 params={"include_objects": "true"},
-                filename="real_get_trip_with_objects.json",
+                filename="real_get_trip_with_objects.xml",
                 category="trip",
             )
         )
@@ -237,7 +236,7 @@ def iter_capture_specs(
                 "GET",
                 "/v1/list/object",
                 params={"type": type_name},
-                filename=f"real_list_object_{type_name}.json",
+                filename=f"real_list_object_{type_name}.xml",
                 category="list_object",
             )
         )
@@ -251,7 +250,7 @@ def iter_capture_specs(
             CaptureSpec(
                 "GET",
                 f"/v1/get/{type_name}/id/{ids[0]}",
-                filename=f"real_get_{type_name}.json",
+                filename=f"real_get_{type_name}.xml",
                 category="object",
             )
         )

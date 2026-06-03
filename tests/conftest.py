@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import json
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
+XML_DIR = FIXTURES_DIR / "xml"
 
 
 @pytest.fixture
@@ -16,21 +17,20 @@ def fixtures_dir() -> Path:
 
 
 @pytest.fixture
-def load_json_fixture() -> object:
-    def _load(name: str) -> object:
-        path = FIXTURES_DIR / "json" / name
-        with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
+def load_xml_fixture() -> Callable[[str], bytes]:
+    def _load(name: str) -> bytes:
+        return (XML_DIR / name).read_bytes()
 
     return _load
 
 
-def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """Skip @pytest.mark.live tests unless `-m live` (or stronger) is passed.
+def load_xml(name: str) -> bytes:
+    """Module-level XML fixture loader for use outside fixtures."""
+    return (XML_DIR / name).read_bytes()
 
-    The default `pytest` invocation must never hit the real TripIt API. The
-    live test is opt-in: `uv run pytest -m live tests/test_oauth_live.py`.
-    """
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """Skip @pytest.mark.live tests unless `-m live` (or stronger) is passed."""
     mark_expr = config.getoption("-m") or ""
     if "live" in mark_expr:
         return  # user explicitly opted in

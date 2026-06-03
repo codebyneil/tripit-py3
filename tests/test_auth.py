@@ -1,11 +1,19 @@
-"""Unit tests for OAuth 1.0a signing."""
+"""Unit tests for OAuth 1.0 signing and handshake."""
 
 from __future__ import annotations
 
 import httpx
 import pytest
+import respx
 
-from tripit.auth import OAuth1Auth, _escape, _form_body_params, authorization_url
+from tripit.auth import (
+    OAuth1Auth,
+    _escape,
+    _form_body_params,
+    authorization_url,
+    get_access_token,
+    get_request_token,
+)
 
 
 def _signing_auth() -> OAuth1Auth:
@@ -171,3 +179,36 @@ def test_signing_key_format(consumer_secret: str, token_secret: str, expected_ke
     sig_b = auth_other._sign("GET", "https://example.com/x", [("a", "b")])
     assert sig_a != sig_b
     assert expected_key  # tautology to consume the param so pytest doesn't complain
+
+
+# ---------- OAuth Core 1.0 handshake (not 1.0a) ----------
+
+
+@respx.mock
+def test_get_request_token_sends_no_callback_in_body() -> None:
+    """TripIt is OAuth 1.0: the callback rides the authorize URL, not request_token."""
+    route = respx.post("https://api.tripit.com/oauth/request_token").mock(
+        return_value=httpx.Response(200, text="oauth_token=rt&oauth_token_secret=rts")
+    )
+    token = get_request_token("ck", "cs")
+    assert token.oauth_token == "rt"
+    body = route.calls.last.request.content.decode()
+    assert "oauth_callback" not in body
+
+
+@respx.mock
+def test_get_access_token_sends_no_verifier() -> None:
+    """OAuth 1.0 issues no oauth_verifier, so none is sent on the exchange."""
+    route = respx.post("https://api.tripit.com/oauth/access_token").mock(
+        return_value=httpx.Response(200, text="oauth_token=at&oauth_token_secret=ats")
+    )
+    token = get_access_token("ck", "cs", "rt", "rts")
+    assert token.oauth_token == "at"
+    body = route.calls.last.request.content.decode()
+    assert "oauth_verifier" not in body
+
+
+def test_authorization_url_carries_the_callback() -> None:
+    """The callback belongs on the authorize redirect (the 1.0 way)."""
+    url = authorization_url("rt", callback_url="https://app.example/cb")
+    assert "oauth_callback=https%3A%2F%2Fapp.example%2Fcb" in url

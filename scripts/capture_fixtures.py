@@ -9,13 +9,12 @@ Reads credentials from `tripit_creds.json` (or env vars). On first run, walks
 the user through a one-time browser-based OAuth approval; subsequent runs
 reuse the cached access token.
 
-Writes one JSON file per endpoint to `tests/fixtures/json/real_*.json`.
+Writes one XML file per endpoint to `tests/fixtures/xml/real_*.xml`.
 """
 
 from __future__ import annotations
 
 import argparse
-import json
 import logging
 import sys
 from pathlib import Path
@@ -35,11 +34,11 @@ from scripts._capture.oauth_setup import (  # noqa: E402
     OAuthApprovalRequired,
     ensure_access_token,
 )
-from scripts._capture.scrub import scrub  # noqa: E402
+from scripts._capture.scrub import scrub_xml  # noqa: E402
 from scripts._capture.tokens import clear_tokens, load_tokens  # noqa: E402
 from tripit import TripIt  # noqa: E402
 
-FIXTURES_DIR = Path("tests/fixtures/json")
+FIXTURES_DIR = Path("tests/fixtures/xml")
 
 
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
@@ -167,9 +166,9 @@ def main(argv: list[str] | None = None) -> int:
             except Exception as exc:
                 log.warning("  ↳ failed: %s", exc)
                 continue
-            clean = scrub(raw)
+            clean = scrub_xml(raw)
             out_path = FIXTURES_DIR / spec.filename
-            out_path.write_text(json.dumps(clean, indent=2, sort_keys=True) + "\n")
+            out_path.write_text(clean if clean.endswith("\n") else clean + "\n")
             captured += 1
 
         log.info("Wrote %d fixture file(s) to %s", captured, FIXTURES_DIR)

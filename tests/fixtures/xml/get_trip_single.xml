@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000100</timestamp>
+  <num_bytes>1024</num_bytes>
+  <Trip>
+    <id>111</id>
+    <uuid>1a2b3c4d-5e6f-9a7b-8c9d-0e1f2a3b4c5d</uuid>
+    <relative_url>/trip/show/id/111</relative_url>
+    <start_date>2025-09-01</start_date>
+    <end_date>2025-09-05</end_date>
+    <display_name>Seattle to New York</display_name>
+    <is_private>false</is_private>
+    <primary_location>New York, NY</primary_location>
+    <is_owner_traveler>true</is_owner_traveler>
+    <TripStatuses>
+      <TripStatus><status>CONFIRMED</status></TripStatus>
+    </TripStatuses>
+  </Trip>
+</Response>

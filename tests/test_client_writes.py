@@ -1,11 +1,10 @@
-"""End-to-end tests for Phase 3 write methods."""
+"""End-to-end tests for write methods (create / replace / delete / CRS)."""
 
 from __future__ import annotations
 
-import json
 from datetime import date
 from pathlib import Path
-from typing import Any
+from urllib.parse import parse_qs
 
 import httpx
 import respx
@@ -14,11 +13,12 @@ from lxml import etree
 from tripit import Trip, TripIt
 from tripit.models.objects import NoteObject
 
-FIXTURES = Path(__file__).parent / "fixtures" / "json"
+XML = Path(__file__).parent / "fixtures" / "xml"
+_EMPTY = b"<Response><timestamp>1</timestamp><num_bytes>1</num_bytes></Response>"
 
 
-def _load(name: str) -> Any:
-    return json.loads((FIXTURES / name).read_text())
+def _load(name: str) -> bytes:
+    return (XML / name).read_bytes()
 
 
 def _client() -> TripIt:
@@ -32,17 +32,13 @@ def _client() -> TripIt:
 
 
 def _form_field(body: bytes, field: str) -> str:
-    from urllib.parse import parse_qs
-
-    parsed = parse_qs(body.decode("utf-8"))
-    return parsed[field][0]
+    return parse_qs(body.decode("utf-8"))[field][0]
 
 
 @respx.mock
 def test_create_trip_posts_xml_and_returns_typed_response() -> None:
-    response_payload = _load("get_trip_single.json")
     route = respx.post("https://api.tripit.example/v1/create").mock(
-        return_value=httpx.Response(200, json=response_payload)
+        return_value=httpx.Response(200, content=_load("get_trip_single.xml"))
     )
     trip_to_create = Trip(
         start_date=date(2026, 6, 1),
@@ -52,87 +48,72 @@ def test_create_trip_posts_xml_and_returns_typed_response() -> None:
     )
     with _client() as c:
         created = c.create_trip(trip_to_create)
-    assert created.id == "999000111222"
+    assert created.id == "111"
 
-    # Verify the request body carried valid XML in the `xml` form field.
     req = route.calls.last.request
     assert req.headers["content-type"].startswith("application/x-www-form-urlencoded")
-    xml_str = _form_field(req.content, "xml")
-    root = etree.fromstring(xml_str.encode("utf-8"))
+    root = etree.fromstring(_form_field(req.content, "xml").encode("utf-8"))
     assert root.tag == "Request"
-    inner = root.find("Trip")
-    assert inner is not None
-    assert inner.findtext("display_name") == "New trip"
+    assert root.find("Trip").findtext("display_name") == "New trip"
 
 
 @respx.mock
 def test_replace_trip_uses_path_id_and_posts_xml() -> None:
-    response_payload = _load("get_trip_single.json")
-    route = respx.post("https://api.tripit.example/v1/replace/trip/id/999000111222").mock(
-        return_value=httpx.Response(200, json=response_payload)
+    route = respx.post("https://api.tripit.example/v1/replace/trip/id/111").mock(
+        return_value=httpx.Response(200, content=_load("get_trip_single.xml"))
     )
     with _client() as c:
-        c.replace_trip("999000111222", Trip(display_name="Renamed"))
+        c.replace_trip("111", Trip(display_name="Renamed"))
 
     req = route.calls.last.request
-    # id is in the URL path; only `xml` is in the form body.
-    xml_str = _form_field(req.content, "xml")
-    root = etree.fromstring(xml_str.encode("utf-8"))
+    root = etree.fromstring(_form_field(req.content, "xml").encode("utf-8"))
     assert root.find("Trip/display_name").text == "Renamed"
-    from urllib.parse import parse_qs
-
     assert "id" not in parse_qs(req.content.decode("utf-8"))
 
 
 @respx.mock
-def test_delete_trip_uses_path_id_with_empty_body() -> None:
-    empty = {"Response": {"timestamp": 1, "num_bytes": 1}}
-    route = respx.post("https://api.tripit.example/v1/delete/trip/id/999000111222").mock(
-        return_value=httpx.Response(200, json=empty)
+def test_delete_trip_uses_get_with_path_id() -> None:
+    route = respx.get("https://api.tripit.example/v1/delete/trip/id/111").mock(
+        return_value=httpx.Response(200, content=_EMPTY)
     )
     with _client() as c:
-        result = c.delete_trip("999000111222")
+        result = c.delete_trip("111")
     assert result is None
-    req = route.calls.last.request
-    # Body has no id and no xml — everything's in the URL path.
-    assert req.content == b""
+    assert route.called
 
 
 @respx.mock
 def test_create_note_serializes_note_object_payload() -> None:
-    response_payload = {
-        "Response": {"NoteObject": {"id": "777", "display_name": "memo", "text": "hi"}}
-    }
+    resp = (
+        b"<Response><timestamp>1</timestamp><num_bytes>1</num_bytes>"
+        b"<NoteObject><id>777</id><display_name>memo</display_name><text>hi</text></NoteObject>"
+        b"</Response>"
+    )
     route = respx.post("https://api.tripit.example/v1/create").mock(
-        return_value=httpx.Response(200, json=response_payload)
+        return_value=httpx.Response(200, content=resp)
     )
     with _client() as c:
         created = c.create_note(NoteObject(display_name="memo", text="hi"))
     assert created.id == "777"
-    req = route.calls.last.request
-    xml_str = _form_field(req.content, "xml")
-    root = etree.fromstring(xml_str.encode("utf-8"))
+    root = etree.fromstring(_form_field(route.calls.last.request.content, "xml").encode("utf-8"))
     assert root.find("NoteObject/display_name").text == "memo"
     assert root.find("NoteObject/text").text == "hi"
 
 
 @respx.mock
 def test_crs_delete_reservations_posts_record_locator() -> None:
-    empty = {"Response": {"timestamp": 1, "num_bytes": 1}}
     route = respx.post("https://api.tripit.example/v1/crsDeleteReservations").mock(
-        return_value=httpx.Response(200, json=empty)
+        return_value=httpx.Response(200, content=_EMPTY)
     )
     with _client() as c:
         c.crs_delete_reservations("LOC-ABC-123")
-    req = route.calls.last.request
-    assert _form_field(req.content, "record_locator") == "LOC-ABC-123"
+    assert _form_field(route.calls.last.request.content, "record_locator") == "LOC-ABC-123"
 
 
 @respx.mock
 def test_crs_load_reservations_passes_xml_and_company_key() -> None:
-    response_payload = {"Response": {"timestamp": 1, "num_bytes": 1, "Trip": []}}
     route = respx.post("https://api.tripit.example/v1/crsLoadReservations").mock(
-        return_value=httpx.Response(200, json=response_payload)
+        return_value=httpx.Response(200, content=_EMPTY)
     )
     payload = "<Request><Trip><display_name>x</display_name></Trip></Request>"
     with _client() as c:

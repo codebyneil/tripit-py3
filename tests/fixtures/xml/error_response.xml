@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000500</timestamp>
+  <num_bytes>256</num_bytes>
+  <Error>
+    <code>404</code>
+    <description>Object not found</description>
+    <entity_type>Trip</entity_type>
+    <timestamp>2025-09-01T12:00:00</timestamp>
+  </Error>
+</Response>

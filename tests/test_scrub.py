@@ -16,7 +16,34 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))  # make `scripts` importable
 
-from scripts._capture.scrub import scrub  # noqa: E402
+from scripts._capture.scrub import scrub, scrub_xml  # noqa: E402
+
+
+def test_scrub_xml_redacts_pii_and_preserves_signal() -> None:
+    xml = (
+        '<Response><timestamp>1</timestamp><num_bytes>1</num_bytes>'
+        '<Profile ref="r">'
+        "<ProfileEmailAddress><address>neil@real.com</address>"
+        "<is_primary>true</is_primary></ProfileEmailAddress>"
+        "<first_name>Neil</first_name><home_city>Seattle</home_city>"
+        "<home_airport>SEA</home_airport></Profile></Response>"
+    )
+    out = scrub_xml(xml)
+    assert "neil@real.com" not in out
+    assert "@example.invalid" in out
+    assert "Neil" not in out
+    assert "Person " in out
+    # City and airport code are load-bearing signal — preserved.
+    assert "Seattle" in out
+    assert "SEA" in out
+
+
+def test_scrub_xml_is_deterministic() -> None:
+    xml = (
+        "<Response><timestamp>1</timestamp><num_bytes>1</num_bytes>"
+        "<first_name>Neil</first_name></Response>"
+    )
+    assert scrub_xml(xml) == scrub_xml(xml)
 
 
 def test_determinism_same_input_same_output() -> None:

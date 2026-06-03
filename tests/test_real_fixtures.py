@@ -1,151 +1,86 @@
-"""Validate every captured `real_*.json` fixture parses and round-trips cleanly.
+"""XML fixture round-trips + XSD conformance + known-deviation guard.
 
-Two parametrized tests, run once per fixture file:
-
-1. `test_roundtrip_no_drift`: parse → dump → parse → dump. The second-pass
-   dump must equal the first-pass dump. Catches parser drift (e.g. a
-   validator that mutates inputs, missing aliases, type coercion bugs).
-
-2. `test_no_unmodeled_fields`: walk the raw JSON side-by-side with the parsed
-   pydantic tree and surface any field TripIt sends that the model dropped
-   via `extra="ignore"`. This is the high-signal model-coverage test —
-   anything reported here is a hole in the typed surface.
-
-The walker recurses into matched fields where the model declares a nested
-`BaseModel` (or `list[BaseModel]`), so unmodeled fields deep inside Trip,
-AirObject, etc. surface with a precise JSONPath.
+- `test_roundtrip_no_drift`: every good fixture parses, re-serializes, and
+  reparses to an identical model.
+- `test_every_trip_data_type_is_modeled`: drive from the object XSD — every
+  declared complexType must either have a model class or be on the documented
+  exclusion list (collaboration / request-action types). This is what backs the
+  README's coverage claim.
+- `test_known_deviation_is_rejected`: TripIt's out-of-schema `<Emissions>` must
+  fail strict parsing (the deviation stays visible, not silently absorbed).
 """
 
 from __future__ import annotations
 
-import json
-import typing
 from pathlib import Path
-from types import UnionType
-from typing import Any, get_args, get_origin
 
 import pytest
-from pydantic import BaseModel
+from lxml import etree
+from pydantic import ValidationError
 
-from tripit.models.envelope import Response
+import tripit.models as models
+from tripit.models import Response
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures" / "json"
+XML_DIR = Path(__file__).parent / "fixtures" / "xml"
+OBJ_XSD = Path(__file__).parent.parent / "src" / "tripit" / "schemas" / "tripit-api-obj-v1.xsd"
 
-# All checked-in fixtures (both hand-curated and real captures).
-ALL_FIXTURES = sorted(FIXTURES_DIR.glob("*.json"))
+GOOD_FIXTURES = sorted(p for p in XML_DIR.glob("*.xml") if p.name != "air_with_emissions.xml")
+
+# XSD complexTypes we deliberately don't model: collaboration / request-action
+# shapes (see docs/README.md "Coverage & intentional exclusions").
+EXCLUDED_TYPES = {
+    "Addresses",
+    "ConnectionRequest",
+    "EmailAddresses",
+    "EmailMessage",
+    "Invitation",
+    "TripInvitations",
+    "TripItemShare",
+    "TripShare",
+    "TravelGroupTripShare",
+}
+
+# XSD type name -> our class name where they differ.
+RENAMED = {"Object": "BaseObject", "ReservationObject": "BaseReservationObject"}
 
 
-def _load_payload(path: Path) -> dict[str, Any]:
-    raw = json.loads(path.read_text())
-    # Capture script writes the wrapping {"Response": ...}; the hand-curated
-    # fixtures use the same shape.
-    return raw["Response"] if isinstance(raw, dict) and "Response" in raw else raw
-
-
-@pytest.mark.parametrize("path", ALL_FIXTURES, ids=lambda p: p.name)
+@pytest.mark.parametrize("path", GOOD_FIXTURES, ids=lambda p: p.name)
 def test_roundtrip_no_drift(path: Path) -> None:
-    """Parse → dump → parse → dump; the second pass must equal the first."""
-    payload = _load_payload(path)
-    parsed = Response.model_validate(payload)
-    first = parsed.model_dump(by_alias=True, exclude_none=True, mode="json")
-    second = Response.model_validate(first).model_dump(
-        by_alias=True, exclude_none=True, mode="json"
-    )
-    assert first == second
+    parsed = Response.from_xml(path.read_bytes())
+    again = Response.from_xml(parsed.to_xml(skip_empty=True))
+    assert parsed.model_dump() == again.model_dump()
 
 
-# ---------- Unknown-fields walker ----------
+def _xsd_complex_types() -> set[str]:
+    tree = etree.parse(str(OBJ_XSD))
+    ns = {"xs": "http://www.w3.org/2001/XMLSchema"}
+    return {
+        el.get("name")
+        for el in tree.findall(".//xs:complexType", ns)
+        if el.get("name") is not None
+    }
 
 
-def _model_known_keys(model_cls: type[BaseModel]) -> set[str]:
-    """Set of JSON keys a model would consume — alias if set, else field name."""
-    keys: set[str] = set()
-    for name, info in model_cls.model_fields.items():
-        keys.add(info.alias or name)
-        keys.add(name)
-    return keys
+def test_every_trip_data_type_is_modeled() -> None:
+    modeled = {name for name in dir(models) if isinstance(getattr(models, name), type)}
+    missing: list[str] = []
+    for xsd_type in _xsd_complex_types():
+        if xsd_type in EXCLUDED_TYPES:
+            continue
+        class_name = RENAMED.get(xsd_type, xsd_type)
+        if class_name not in modeled:
+            missing.append(xsd_type)
+    assert not missing, f"XSD complexTypes with no model: {sorted(missing)}"
 
 
-def _resolve_model_type(annotation: Any) -> type[BaseModel] | None:
-    """If `annotation` is BaseModel or list[BaseModel] (or Optional thereof),
-    return the underlying BaseModel class. Otherwise None.
-    """
-    if annotation is None or annotation is type(None):
-        return None
-    origin = get_origin(annotation)
-    if origin is None:
-        if isinstance(annotation, type) and issubclass(annotation, BaseModel):
-            return annotation
-        return None
-    if origin is typing.Union or origin is UnionType:
-        for arg in get_args(annotation):
-            inner = _resolve_model_type(arg)
-            if inner is not None:
-                return inner
-        return None
-    if origin is list:
-        args = get_args(annotation)
-        if args:
-            return _resolve_model_type(args[0])
-    return None
+def test_excluded_types_are_really_absent() -> None:
+    """The exclusion list must be honest: none of them should be modeled."""
+    modeled = {name for name in dir(models) if isinstance(getattr(models, name), type)}
+    leaked = sorted(t for t in EXCLUDED_TYPES if t in modeled)
+    assert not leaked, f"types claimed excluded but actually modeled: {leaked}"
 
 
-def _walk_diff(
-    raw: Any,
-    model_obj: Any,
-    *,
-    path: str,
-    errors: list[str],
-) -> None:
-    """Recursively compare raw JSON to a parsed model; collect unmodeled keys."""
-    if model_obj is None or raw is None:
-        return
-
-    if isinstance(model_obj, BaseModel):
-        if not isinstance(raw, dict):
-            return
-        known = _model_known_keys(type(model_obj))
-        for raw_key, raw_value in raw.items():
-            if raw_key not in known:
-                errors.append(f"{path}.{raw_key}: unmodeled field on {type(model_obj).__name__}")
-                continue
-            # Recurse if this field has a model-typed sub-tree.
-            info = type(model_obj).model_fields.get(raw_key) or next(
-                (f for n, f in type(model_obj).model_fields.items() if (f.alias or n) == raw_key),
-                None,
-            )
-            if info is None:
-                continue
-            inner_cls = _resolve_model_type(info.annotation)
-            if inner_cls is None:
-                continue
-            # Find the parsed attribute name and value.
-            python_attr: str | None = None
-            for n, f in type(model_obj).model_fields.items():
-                if (f.alias or n) == raw_key or n == raw_key:
-                    python_attr = n
-                    break
-            if python_attr is None:
-                continue
-            parsed_value = getattr(model_obj, python_attr, None)
-            _walk_diff(raw_value, parsed_value, path=f"{path}.{raw_key}", errors=errors)
-        return
-
-    if isinstance(model_obj, list):
-        if not isinstance(raw, list):
-            # Single-vs-list coercion happened on the parser side; treat as 1-elem.
-            raw = [raw]
-        for i, (raw_item, parsed_item) in enumerate(zip(raw, model_obj, strict=False)):
-            _walk_diff(raw_item, parsed_item, path=f"{path}[{i}]", errors=errors)
-
-
-@pytest.mark.parametrize("path", ALL_FIXTURES, ids=lambda p: p.name)
-def test_no_unmodeled_fields(path: Path) -> None:
-    """Every key TripIt emits should map to a declared field on our models."""
-    payload = _load_payload(path)
-    envelope = Response.model_validate(payload)
-    errors: list[str] = []
-    _walk_diff(payload, envelope, path="Response", errors=errors)
-    if errors:
-        msg = "\n".join(["Unmodeled fields detected:", *errors])
-        pytest.fail(msg)
+def test_known_deviation_is_rejected() -> None:
+    payload = (XML_DIR / "air_with_emissions.xml").read_bytes()
+    with pytest.raises(ValidationError):
+        Response.from_xml(payload)

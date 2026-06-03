@@ -17,10 +17,10 @@ capture script first to mint them.
 
 What this test exercises:
 
-  1. OAuth 1.0a signing against the live `/v1/get/profile` endpoint.
-  2. Pydantic response parsing of a real, non-curated Profile.
-  3. The plan's third risk: that some "JSON-supported" endpoints might
-     quietly return XML. If reads pass, that risk is closed.
+  1. OAuth 1.0 signing against the live `/v1/get/profile` endpoint.
+  2. Strict pydantic-xml parsing of a real, non-curated Profile — if a live
+     account's Profile carries an out-of-schema element, strict mode will
+     surface it here.
 """
 
 from __future__ import annotations

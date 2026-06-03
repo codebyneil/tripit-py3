@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000400</timestamp>
+  <num_bytes>1200</num_bytes>
+  <PointsProgram>
+    <id>5001</id>
+    <name>Alaska Mileage Plan</name>
+    <account_number>MP123456</account_number>
+    <balance>48210</balance>
+    <elite_status>MVP Gold</elite_status>
+    <last_modified>1699000000</last_modified>
+    <Activity>
+      <date>2025-05-02</date>
+      <description>Flight SEA-JFK</description>
+      <total>2400</total>
+    </Activity>
+  </PointsProgram>
+  <PointsProgram>
+    <id>5002</id>
+    <name>Marriott Bonvoy</name>
+    <account_number>MB987654</account_number>
+    <balance>102300</balance>
+  </PointsProgram>
+</Response>

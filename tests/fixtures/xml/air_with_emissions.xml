@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Known deviation: TripIt emits an <Emissions> element on AirSegment that is
+  NOT in the published XSD. Under strict parsing this MUST fail; the conformance
+  test asserts that failure so the deviation stays documented and visible.
+-->
+<Response>
+  <timestamp>1700000800</timestamp>
+  <num_bytes>4096</num_bytes>
+  <AirObject>
+    <id>900100</id>
+    <display_name>AS 12 SEA to JFK</display_name>
+    <Segment>
+      <start_airport_code>SEA</start_airport_code>
+      <end_airport_code>JFK</end_airport_code>
+      <id>900101</id>
+      <Emissions>
+        <co2_kg>312.4</co2_kg>
+      </Emissions>
+    </Segment>
+  </AirObject>
+</Response>

@@ -16,6 +16,8 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
+from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
+
 # Lowercase field names whose value should be replaced.
 _NAME_FIELDS = frozenset(
     {
@@ -111,3 +113,32 @@ def scrub(data: Any) -> Any:
     if isinstance(data, list):
         return [scrub(item) for item in data]
     return data
+
+
+def scrub_xml(xml_text: str) -> str:
+    """Scrub a captured XML response string, reusing the same field heuristics.
+
+    Walks the element tree and rewrites the text of any element whose tag is a
+    redaction field (by lowercased tag name). An `<address>` element is treated
+    as an email only when it sits inside a `ProfileEmailAddress` (matching the
+    dict scrubber's structural rule).
+    """
+    root = etree.fromstring(xml_text.encode("utf-8"))
+    for el in root.iter():
+        text = el.text
+        if not isinstance(text, str) or not text.strip():
+            continue
+        tag = el.tag.lower() if isinstance(el.tag, str) else ""
+        if tag in _NAME_FIELDS:
+            el.text = _fake("name", text)
+        elif tag in _EMAIL_FIELDS:
+            el.text = _fake("email", text)
+        elif tag in _PHONE_FIELDS:
+            el.text = _fake("phone", text)
+        elif tag in _STREET_FIELDS:
+            el.text = _fake("street", text)
+        elif tag == "address":
+            parent = el.getparent()
+            if parent is not None and parent.tag == "ProfileEmailAddress":
+                el.text = _fake("email", text)
+    return etree.tostring(root, xml_declaration=True, encoding="UTF-8").decode("utf-8")

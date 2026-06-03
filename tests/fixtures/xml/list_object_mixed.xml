@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000700</timestamp>
+  <num_bytes>3000</num_bytes>
+  <AirObject>
+    <id>900100</id>
+    <trip_id>111</trip_id>
+    <display_name>AS 12 SEA to JFK</display_name>
+    <Segment>
+      <start_airport_code>SEA</start_airport_code>
+      <end_airport_code>JFK</end_airport_code>
+      <id>900101</id>
+    </Segment>
+  </AirObject>
+  <LodgingObject>
+    <id>900200</id>
+    <trip_id>111</trip_id>
+    <display_name>The Standard</display_name>
+    <supplier_name>The Standard High Line</supplier_name>
+    <StartDateTime><date>2025-09-01</date></StartDateTime>
+    <EndDateTime><date>2025-09-05</date></EndDateTime>
+    <Address><city>New York</city><state>NY</state></Address>
+    <number_guests>1</number_guests>
+  </LodgingObject>
+  <CarObject>
+    <id>900300</id>
+    <trip_id>111</trip_id>
+    <display_name>Hertz</display_name>
+    <car_type>Intermediate</car_type>
+  </CarObject>
+  <page_num>1</page_num>
+  <page_size>25</page_size>
+  <max_page>1</max_page>
+</Response>

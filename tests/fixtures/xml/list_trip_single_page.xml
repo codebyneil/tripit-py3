@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <timestamp>1700000000</timestamp>
+  <num_bytes>2048</num_bytes>
+  <Trip>
+    <id>111</id>
+    <relative_url>/trip/show/id/111</relative_url>
+    <start_date>2025-09-01</start_date>
+    <end_date>2025-09-05</end_date>
+    <display_name>Seattle to New York</display_name>
+    <is_private>false</is_private>
+    <primary_location>New York, NY</primary_location>
+    <PrimaryLocationAddress>
+      <city>New York</city>
+      <state>NY</state>
+      <country>US</country>
+      <latitude>40.712776</latitude>
+      <longitude>-74.005974</longitude>
+    </PrimaryLocationAddress>
+    <is_pro_enabled>true</is_pro_enabled>
+    <last_modified>1699999999</last_modified>
+    <is_owner_traveler>true</is_owner_traveler>
+  </Trip>
+  <Trip>
+    <id>222</id>
+    <relative_url>/trip/show/id/222</relative_url>
+    <start_date>2025-10-10</start_date>
+    <end_date>2025-10-12</end_date>
+    <display_name>Brussels</display_name>
+    <is_private>true</is_private>
+    <TripPurposes>
+      <purpose_type_code>B</purpose_type_code>
+      <is_auto_generated>false</is_auto_generated>
+    </TripPurposes>
+  </Trip>
+  <page_num>1</page_num>
+  <page_size>25</page_size>
+  <max_page>1</max_page>
+</Response>

@@ -1,80 +1,66 @@
-"""Model parsing & round-trip tests for envelope + Trip."""
+"""Trip + Response envelope parsing from XML."""
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
-from typing import Any
 
-from tripit.models.envelope import Response
-from tripit.models.trip import Trip
+from tripit.models import Response
 
-FIXTURES = Path(__file__).parent / "fixtures" / "json"
+XML = Path(__file__).parent / "fixtures" / "xml"
 
 
-def _load(name: str) -> Any:
-    import json
-
-    with (FIXTURES / name).open() as f:
-        return json.load(f)["Response"]
+def _load(name: str) -> bytes:
+    return (XML / name).read_bytes()
 
 
 def test_list_trip_envelope_parses_multiple_trips() -> None:
-    envelope = Response.model_validate(_load("list_trip_single_page.json"))
-    assert len(envelope.trips) == 2
-    first = envelope.trips[0]
-    assert first.id == "999000111222"
-    assert first.display_name == "Tokyo Vacation"
-    assert first.start_date == date(2026, 5, 1)
-    assert first.is_private is False
-    assert first.is_pro_enabled is True
+    env = Response.from_xml(_load("list_trip_single_page.xml"))
+    assert len(env.trips) == 2
+    first = env.trips[0]
+    assert first.display_name == "Seattle to New York"
     assert first.primary_location_address is not None
-    assert first.primary_location_address.city == "Tokyo"
-    assert first.primary_location_address.country == "JP"
+    assert first.primary_location_address.city == "New York"
+    assert env.page_num == 1
+    assert env.max_page == 1
 
 
-def test_get_trip_single_object_is_wrapped_into_list() -> None:
-    """TripIt sometimes returns `Trip` as a bare object instead of a list."""
-    envelope = Response.model_validate(_load("get_trip_single.json"))
-    assert len(envelope.trips) == 1
-    assert envelope.trips[0].id == "999000111222"
+def test_get_trip_single_object_parses() -> None:
+    env = Response.from_xml(_load("get_trip_single.xml"))
+    assert len(env.trips) == 1
+    trip = env.trips[0]
+    assert trip.id == "111"
+    assert trip.trip_statuses is not None
+    assert trip.trip_statuses.trip_statuses[0].status == "CONFIRMED"
 
 
-def test_integer_id_is_coerced_to_string() -> None:
-    """The fixture has id as a raw integer; we should still see a str."""
-    envelope = Response.model_validate(_load("get_trip_single.json"))
-    assert isinstance(envelope.trips[0].id, str)
+def test_ids_parse_as_strings() -> None:
+    env = Response.from_xml(_load("list_trip_single_page.xml"))
+    assert env.trips[0].id == "111"
+    assert isinstance(env.trips[0].id, str)
 
 
-def test_warning_response_yields_no_trips_and_warnings_list() -> None:
-    envelope = Response.model_validate(_load("warning_response.json"))
-    assert envelope.trips == []
-    assert len(envelope.warnings) == 1
-    assert envelope.warnings[0].entity_type == "Trip"
+def test_warning_response_yields_warnings_and_trips() -> None:
+    env = Response.from_xml(_load("warning_response.xml"))
+    assert len(env.warnings) == 1
+    assert env.warnings[0].entity_type == "Trip"
+    assert len(env.trips) == 1
 
 
 def test_error_response_yields_error_list() -> None:
-    envelope = Response.model_validate(_load("error_response.json"))
-    assert len(envelope.errors) == 1
-    assert envelope.errors[0].code == 404
+    env = Response.from_xml(_load("error_response.xml"))
+    assert len(env.errors) == 1
+    assert env.errors[0].code == 404
+    assert env.errors[0].entity_type == "Trip"
 
 
-def test_trip_model_accepts_aliased_payload() -> None:
-    payload = {
-        "id": "1",
-        "PrimaryLocationAddress": {"city": "Berlin"},
-    }
-    trip = Trip.model_validate(payload)
-    assert trip.primary_location_address is not None
-    assert trip.primary_location_address.city == "Berlin"
+def test_trip_purposes_parse() -> None:
+    env = Response.from_xml(_load("list_trip_single_page.xml"))
+    second = env.trips[1]
+    assert second.trip_purposes is not None
+    assert second.trip_purposes.purpose_type_code == "B"
 
 
-def test_trip_model_round_trip_preserves_aliases() -> None:
-    payload: dict[str, Any] = {
-        "id": "1",
-        "start_date": "2026-05-01",
-        "PrimaryLocationAddress": {"city": "Berlin"},
-    }
-    trip = Trip.model_validate(payload)
-    dumped = trip.model_dump(mode="json", by_alias=True, exclude_none=True)
-    assert dumped["PrimaryLocationAddress"]["city"] == "Berlin"
+def test_roundtrip_preserves_data() -> None:
+    env = Response.from_xml(_load("list_trip_single_page.xml"))
+    again = Response.from_xml(env.to_xml(skip_empty=True))
+    assert env.model_dump() == again.model_dump()
