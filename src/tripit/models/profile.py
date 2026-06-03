@@ -1,200 +1,150 @@
-"""Profile model and its many sub-types."""
+"""Profile model and its many sub-types (all read-only in the TripIt API)."""
 
 from __future__ import annotations
 
 import datetime as _dt
-from typing import Any
 
-from pydantic import Field, field_validator, model_validator
+from pydantic_xml import attr, element
 
-from tripit.models._base import TripItBool, TripItId, TripItModel
-
-
-def _wrap_in_list(value: Any) -> Any:
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return value
-    return [value]
+from tripit.models._base import TripItModel
+from tripit.models.common import DateTime
 
 
-class ProfileEmailAddress(TripItModel):
-    uuid: str
-    uuid_ref: str
-    email_ref: str | None = None
-    address: str
-    is_auto_import: TripItBool
-    is_confirmed: TripItBool
-    is_primary: TripItBool | None = None
-    is_auto_inbox_eligible: TripItBool | None = None
-    import_trip_plan_sharing: str | None = None
-
-
-class ProfileEmailAddresses(TripItModel):
-    profile_email_addresses: list[ProfileEmailAddress] = Field(
-        default_factory=list, alias="ProfileEmailAddress"
-    )
-
-    @field_validator("profile_email_addresses", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
-
-
-class NotificationSetting(TripItModel):
-    code: str | None = None
-    name: str | None = None
-    type: str | None = None
-    is_enabled: TripItBool | None = None
-    # Despite the `is_` prefix, TripIt sends this as a tier label
-    # ("FREE" / "PRO"), not a boolean.
-    is_premium: str | None = None
-
-
-class NotificationSettings(TripItModel):
-    settings: list[NotificationSetting] = Field(default_factory=list, alias="NotificationSetting")
-
-    @field_validator("settings", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
-
-
-class Group(TripItModel):
-    id: TripItId | None = None
-    display_name: str | None = None
-    url: str | None = None
-
-
-class GroupMemberships(TripItModel):
-    groups: list[Group] = Field(default_factory=list, alias="Group")
-
-    @field_validator("groups", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
-
-
-class AdditionalFactor(TripItModel):
-    factor_type: str | None = None
-    factor_value: str | None = None
-
-
-class AdditionalFactors(TripItModel):
-    factors: list[AdditionalFactor] = Field(default_factory=list, alias="AdditionalFactor")
-
-    @field_validator("factors", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
-
-
-class UserSettings(TripItModel):
-    """User-account settings. Nested structures vary by account & feature flags.
-
-    We keep them as untyped dicts since TripIt evolves them faster than the
-    XSD; their content is rarely interesting for callers.
-    """
-
-    ai_import: dict[str, Any] | None = Field(default=None, alias="AiImport")
-    apple_foundation_model: dict[str, Any] | None = Field(
-        default=None, alias="AppleFoundationModel"
+class ProfileEmailAddress(TripItModel, tag="ProfileEmailAddress"):
+    uuid: str = element()
+    uuid_ref: str = element()
+    email_ref: str | None = element(default=None)
+    address: str = element()
+    is_auto_import: bool = element()
+    is_confirmed: bool = element()
+    is_primary: bool = element()
+    is_auto_inbox_eligible: bool | None = element(default=None)
+    import_trip_plan_sharing: str | None = element(default=None)
+    last_auto_inbox_fetch_date_time: DateTime | None = element(
+        tag="LastAutoInboxFetchDateTime", default=None
     )
 
 
-class BillingPeriod(TripItModel):
-    start_date: _dt.date | None = None
-    end_date: _dt.date | None = None
-    plan_name: str | None = None
-    is_active: TripItBool | None = None
-
-
-class BillingPeriods(TripItModel):
-    periods: list[BillingPeriod] = Field(default_factory=list, alias="BillingPeriod")
-
-    @field_validator("periods", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
-
-
-class Profile(TripItModel):
-    """A TripIt user profile."""
-
-    # The XSD declares `ref` as an XML attribute on the Profile element. TripIt's
-    # JSON encoding emits attributes as a nested `@attributes` dict like
-    # `{"@attributes": {"ref": "..."}}`. A `model_validator` flattens that into
-    # the plain `ref` field below before standard parsing runs.
-    ref: str | None = None
-    # Explicit field so the unknown-fields detector recognizes @attributes as
-    # consumed by us; excluded from dumps so round-trip stays stable.
-    attributes: dict[str, Any] | None = Field(default=None, alias="@attributes", exclude=True)
-
-    @model_validator(mode="before")
-    @classmethod
-    def _lift_attributes_ref(cls, data: Any) -> Any:
-        if isinstance(data, dict):
-            attrs = data.get("@attributes")
-            if isinstance(attrs, dict) and "ref" in attrs:
-                # Don't mutate the caller's dict.
-                merged = {**data}
-                merged.setdefault("ref", attrs["ref"])
-                return merged
-        return data
-
-    profile_email_addresses: ProfileEmailAddresses | None = Field(
-        default=None, alias="ProfileEmailAddresses"
+class ProfileEmailAddresses(TripItModel, tag="ProfileEmailAddresses"):
+    profile_email_addresses: list[ProfileEmailAddress] = element(
+        tag="ProfileEmailAddress", default_factory=list
     )
-    notification_settings: NotificationSettings | None = Field(
-        default=None, alias="NotificationSettings"
-    )
-    group_memberships: GroupMemberships | None = Field(default=None, alias="GroupMemberships")
-    additional_factors: AdditionalFactors | None = Field(default=None, alias="AdditionalFactors")
-    user_settings: UserSettings | None = Field(default=None, alias="UserSettings")
-    billing_periods: BillingPeriods | None = Field(default=None, alias="BillingPeriods")
 
-    is_client: TripItBool | None = None
-    is_pro: TripItBool | None = None
-    screen_name: str | None = None
-    public_display_name: str | None = None
-    date_of_birth: _dt.date | None = None
-    profile_url: str | None = None
-    first_name: str | None = None
-    middle_name: str | None = None
-    last_name: str | None = None
-    home_city: str | None = None
-    home_country_code: str | None = None
-    home_airport: str | None = None
-    company: str | None = None
-    about_me_info: str | None = None
-    photo_url: str | None = None
-    activity_feed_url: str | None = None
-    alerts_feed_url: str | None = None
-    ical_url: str | None = None
-    cal_user_display_name: str | None = None
-    is_cal_detailed: TripItBool | None = None
-    is_cal_localtime: TripItBool | None = None
-    is_cal_including_notes: TripItBool | None = None
-    is_cal_including_sensitive_info: TripItBool | None = None
-    language_tag: str | None = None
-    date_endian_format: str | None = None
-    hour_clock: str | None = None
-    distance: str | None = None
-    temperature: str | None = None
-    should_auto_import: TripItBool | None = None
-    sms_phone_number: str | None = None
-    sms_country_code: str | None = None
-    sms_email_address: str | None = None
-    should_allow_pro_purchase: TripItBool | None = None
-    is_t4t_mobile_cal: TripItBool | None = None
-    is_legacy_paid_app_user: TripItBool | None = None
-    is_concur_linked: TripItBool | None = None
-    uuid: str | None = None
-    jurisdiction: str | None = None
-    is_enterprise_pro: TripItBool | None = None
-    risk_level: int | None = None
-    blocked_status: str | None = None
-    must_acknowledge_privacy_statement: TripItBool | None = None
-    last_privacy_statement_acknowledgement: str | None = None
-    is_public_trip_sharing_disabled: TripItBool | None = None
-    profile_ref_v2: str | None = None
+
+class NotificationSetting(TripItModel, tag="NotificationSetting"):
+    code: str = element()
+    name: str = element()
+    type: str = element()
+    is_enabled: bool = element()
+    # Despite the `is_` prefix, the XSD types this as a string (tier label).
+    is_premium: str = element()
+
+
+class NotificationSettings(TripItModel, tag="NotificationSettings"):
+    settings: list[NotificationSetting] = element(tag="NotificationSetting", default_factory=list)
+
+
+class Group(TripItModel, tag="Group"):
+    display_name: str = element()
+    url: str = element()
+    unique_name: str = element()
+    is_free: bool = element()
+
+
+class GroupMemberships(TripItModel, tag="GroupMemberships"):
+    groups: list[Group] = element(tag="Group", default_factory=list)
+
+
+class AdditionalFactor(TripItModel, tag="AdditionalFactor"):
+    type: str = element()
+    display_name: str | None = element(default=None)
+
+
+class AdditionalFactors(TripItModel, tag="AdditionalFactors"):
+    factors: list[AdditionalFactor] = element(tag="AdditionalFactor", default_factory=list)
+
+
+class AiImport(TripItModel, tag="AiImport"):
+    is_opt_in_visible: bool | None = element(default=None)
+    is_opt_in_read_only: bool | None = element(default=None)
+    is_opted_in: bool | None = element(default=None)
+    opted_in_ts: int | None = element(default=None)
+    introduced_feature_mobile_ts: int | None = element(default=None)
+    introduced_feature_webapp_ts: int | None = element(default=None)
+
+
+class UserSettings(TripItModel, tag="UserSettings"):
+    ai_import: AiImport | None = element(tag="AiImport", default=None)
+
+
+class BillingPeriod(TripItModel, tag="BillingPeriod"):
+    product_type_code: str = element()
+    end_date: _dt.date = element()
+    hard_end_date: _dt.date = element()
+
+
+class BillingPeriods(TripItModel, tag="BillingPeriods"):
+    periods: list[BillingPeriod] = element(tag="BillingPeriod", default_factory=list)
+
+
+class Profile(TripItModel, tag="Profile"):
+    """A TripIt user profile. `ref` is an XML attribute on the Profile element."""
+
+    ref: str = attr()
+
+    profile_email_addresses: ProfileEmailAddresses | None = element(
+        tag="ProfileEmailAddresses", default=None
+    )
+    notification_settings: NotificationSettings | None = element(
+        tag="NotificationSettings", default=None
+    )
+    group_memberships: GroupMemberships | None = element(tag="GroupMemberships", default=None)
+    additional_factors: AdditionalFactors | None = element(tag="AdditionalFactors", default=None)
+    user_settings: UserSettings | None = element(tag="UserSettings", default=None)
+    billing_periods: BillingPeriods | None = element(tag="BillingPeriods", default=None)
+
+    is_client: bool = element()
+    is_pro: bool = element()
+    screen_name: str = element()
+    public_display_name: str = element()
+    date_of_birth: _dt.date | None = element(default=None)
+    profile_url: str = element()
+    first_name: str | None = element(default=None)
+    middle_name: str | None = element(default=None)
+    last_name: str | None = element(default=None)
+    home_city: str | None = element(default=None)
+    home_country_code: str | None = element(default=None)
+    home_airport: str | None = element(default=None)
+    company: str | None = element(default=None)
+    about_me_info: str | None = element(default=None)
+    photo_url: str | None = element(default=None)
+    activity_feed_url: str | None = element(default=None)
+    alerts_feed_url: str | None = element(default=None)
+    ical_url: str | None = element(default=None)
+    cal_user_display_name: str | None = element(default=None)
+    is_cal_detailed: bool | None = element(default=None)
+    is_cal_localtime: bool | None = element(default=None)
+    is_cal_including_notes: bool | None = element(default=None)
+    is_cal_including_sensitive_info: bool | None = element(default=None)
+    language_tag: str | None = element(default=None)
+    date_endian_format: str | None = element(default=None)
+    hour_clock: str | None = element(default=None)
+    distance: str | None = element(default=None)
+    temperature: str | None = element(default=None)
+    should_auto_import: bool | None = element(default=None)
+    sms_phone_number: str | None = element(default=None)
+    sms_country_code: str | None = element(default=None)
+    sms_email_address: str | None = element(default=None)
+    should_allow_pro_purchase: bool | None = element(default=None)
+    is_t4t_mobile_cal: bool | None = element(default=None)
+    is_legacy_paid_app_user: bool | None = element(default=None)
+    is_concur_linked: bool | None = element(default=None)
+    uuid: str | None = element(default=None)
+    jurisdiction: str | None = element(default=None)
+    is_enterprise_pro: bool | None = element(default=None)
+    risk_level: int | None = element(default=None)
+    blocked_status: str | None = element(default=None)
+    must_acknowledge_privacy_statement: bool | None = element(default=None)
+    last_privacy_statement_acknowledgement: str | None = element(default=None)
+    is_public_trip_sharing_disabled: bool | None = element(default=None)
+    profile_ref_v2: str | None = element(default=None)

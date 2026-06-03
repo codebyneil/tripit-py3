@@ -1,432 +1,358 @@
 """All TripIt reservation/object types: air, lodging, car, rail, etc.
 
-Modelled as a small inheritance hierarchy mirroring the XSD:
+A small inheritance hierarchy mirroring the XSD:
 
-- `BaseObject` — id, uuid, trip_id, display_name, Creator, Image[]
-- `BaseReservationObject(BaseObject)` — adds booking/supplier fields, Agency,
-  CancelUserAction. Parent of Air/Lodging/Car/Rail/Transport/Cruise/Restaurant/
-  Activity/Parking.
-- Plain objects (Note, Map, Directions, Weather) inherit `BaseObject` directly.
+- `BaseObject` — the XSD `Object` base (id, uuid, trip ids, Creator, Image[]).
+- `BaseReservationObject(BaseObject)` — the XSD `ReservationObject` extension
+  (booking/supplier fields, Agency, CancelUserAction). Parent of Air/Lodging/
+  Car/Parking/Rail/Transport/Cruise/Restaurant/Activity.
+- Plain objects (Note, Map, Directions, Weather) extend `BaseObject` directly.
 
-Sub-segment models (`AirSegment`, `RailSegment`, etc.) live alongside their
-parent objects.
+Field order follows the XSD so serialized `<Request>` payloads validate against
+the sequenced complex types.
 """
 
 from __future__ import annotations
 
 import datetime as _dt
 from decimal import Decimal
-from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic_xml import element
 
-from tripit.models._base import TripItBool, TripItId, TripItModel
-from tripit.models.common import Address, Creator, DateTime, Image, Traveler
-
-
-def _wrap_in_list(value: Any) -> Any:
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return value
-    return [value]
-
-
-# ---------- Shared base & reservation-level fields ----------
-
-
-class CancelUserAction(TripItModel):
-    action_code: str | None = None
-    action_at: int | None = None
-    action_by: str | None = None
-
-
-class Agency(TripItModel):
-    agency_conf_num: str | None = None
-    agency_name: str | None = None
-    agency_client_name: str | None = None
-    agency_phone: str | None = None
-    agency_email_address: str | None = None
-    agency_url: str | None = None
-    agency_contact: str | None = None
-    partner_agency_id: TripItId | None = None
-
-
-class PartnerAgency(TripItModel):
-    partner_agency_id: TripItId
-    partner_agency_name: str
-    partner_agency_short_name: str
-    partner_agency_logo_small_url: str | None = None
-    partner_agency_logo_medium_url: str | None = None
-    partner_agency_logo_large_url: str | None = None
+from tripit.models._base import TripItModel
+from tripit.models.common import (
+    Address,
+    Agency,
+    CancelUserAction,
+    Creator,
+    DateTime,
+    Image,
+    Traveler,
+)
+from tripit.models.seattracker import SeatTrackerSubscription
 
 
 class BaseObject(TripItModel):
-    """Fields shared by every TripIt object subclass (`Object` in the XSD)."""
+    """Fields shared by every TripIt object (the XSD `Object` type)."""
 
-    id: TripItId | None = None
-    uuid: str | None = None
-    trip_id: TripItId | None = None
-    trip_uuid: str | None = None
-    is_client_traveler: TripItBool | None = None
-    relative_url: str | None = None
-    display_name: str | None = None
-    images: list[Image] = Field(default_factory=list, alias="Image")
-    creator: Creator | None = Field(default=None, alias="Creator")
-    is_display_name_auto_generated: TripItBool | None = None
-    last_modified: int | None = None
-
-    @field_validator("images", mode="before")
-    @classmethod
-    def _wrap_images(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+    id: str | None = element(default=None)
+    uuid: str | None = element(default=None)
+    trip_id: str | None = element(default=None)
+    trip_uuid: str | None = element(default=None)
+    is_client_traveler: bool | None = element(default=None)
+    relative_url: str | None = element(default=None)
+    display_name: str | None = element(default=None)
+    images: list[Image] = element(tag="Image", default_factory=list)
+    creator: Creator | None = element(tag="Creator", default=None)
+    is_display_name_auto_generated: bool | None = element(default=None)
+    last_modified: int | None = element(default=None)
 
 
 class BaseReservationObject(BaseObject):
-    """Fields shared by every reservation-style object (extends `Object` in XSD)."""
+    """The XSD `ReservationObject` extension of `Object`."""
 
-    cancel_user_action: CancelUserAction | None = Field(default=None, alias="CancelUserAction")
-    cancellation_date_time: DateTime | None = Field(default=None, alias="CancellationDateTime")
-    booking_date: _dt.date | None = None
-    booking_rate: str | None = None
-    booking_site_conf_num: str | None = None
-    booking_site_name: str | None = None
-    booking_site_phone: str | None = None
-    booking_site_email_address: str | None = None
-    booking_site_url: str | None = None
-    record_locator: str | None = None
-    supplier_conf_num: str | None = None
-    supplier_contact: str | None = None
-    supplier_email_address: str | None = None
-    supplier_name: str | None = None
-    supplier_phone: str | None = None
-    supplier_url: str | None = None
-    is_purchased: TripItBool | None = None
-    notes: str | None = None
-    restrictions: str | None = None
-    total_cost: str | None = None
-    is_tripit_booking: TripItBool | None = None
-    has_possible_cancellation: TripItBool | None = None
-    agency: Agency | None = Field(default=None, alias="Agency")
+    cancel_user_action: CancelUserAction | None = element(tag="CancelUserAction", default=None)
+    cancellation_date_time: DateTime | None = element(tag="CancellationDateTime", default=None)
+    booking_date: _dt.date | None = element(default=None)
+    booking_rate: str | None = element(default=None)
+    booking_site_conf_num: str | None = element(default=None)
+    booking_site_name: str | None = element(default=None)
+    booking_site_phone: str | None = element(default=None)
+    booking_site_email_address: str | None = element(default=None)
+    booking_site_url: str | None = element(default=None)
+    record_locator: str | None = element(default=None)
+    supplier_conf_num: str | None = element(default=None)
+    supplier_contact: str | None = element(default=None)
+    supplier_email_address: str | None = element(default=None)
+    supplier_name: str | None = element(default=None)
+    supplier_phone: str | None = element(default=None)
+    supplier_url: str | None = element(default=None)
+    is_purchased: bool | None = element(default=None)
+    notes: str | None = element(default=None)
+    restrictions: str | None = element(default=None)
+    total_cost: str | None = element(default=None)
+    is_tripit_booking: bool | None = element(default=None)
+    has_possible_cancellation: bool | None = element(default=None)
+    agency: Agency | None = element(tag="Agency", default=None)
 
 
 # ---------- Air ----------
 
 
-class FlightStatus(TripItModel):
-    scheduled_departure_date_time: DateTime | None = Field(
-        default=None, alias="ScheduledDepartureDateTime"
+class FlightStatus(TripItModel, tag="FlightStatus"):
+    scheduled_departure_date_time: DateTime | None = element(
+        tag="ScheduledDepartureDateTime", default=None
     )
-    estimated_departure_date_time: DateTime | None = Field(
-        default=None, alias="EstimatedDepartureDateTime"
+    estimated_departure_date_time: DateTime | None = element(
+        tag="EstimatedDepartureDateTime", default=None
     )
-    scheduled_arrival_date_time: DateTime | None = Field(
-        default=None, alias="ScheduledArrivalDateTime"
+    scheduled_arrival_date_time: DateTime | None = element(
+        tag="ScheduledArrivalDateTime", default=None
     )
-    estimated_arrival_date_time: DateTime | None = Field(
-        default=None, alias="EstimatedArrivalDateTime"
+    estimated_arrival_date_time: DateTime | None = element(
+        tag="EstimatedArrivalDateTime", default=None
     )
-    flight_status: str
-    is_connection_at_risk: TripItBool | None = None
-    departure_terminal: str | None = None
-    departure_gate: str | None = None
-    arrival_terminal: str | None = None
-    arrival_gate: str | None = None
-    layover_minutes: str | None = None
-    baggage_claim: str | None = None
-    diverted_airport_code: str | None = None
-    last_modified: int
+    flight_status: str = element()
+    is_connection_at_risk: bool | None = element(default=None)
+    departure_terminal: str | None = element(default=None)
+    departure_gate: str | None = element(default=None)
+    arrival_terminal: str | None = element(default=None)
+    arrival_gate: str | None = element(default=None)
+    layover_minutes: str | None = element(default=None)
+    baggage_claim: str | None = element(default=None)
+    diverted_airport_code: str | None = element(default=None)
+    last_modified: int = element()
 
 
-class AirSegment(TripItModel):
-    status: FlightStatus | None = Field(default=None, alias="Status")
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    start_airport_code: str | None = None
-    start_airport_name: str | None = None
-    start_airport_latitude: Decimal | None = None
-    start_airport_longitude: Decimal | None = None
-    start_city_name: str | None = None
-    start_country_code: str | None = None
-    start_gate: str | None = None
-    start_terminal: str | None = None
-    end_airport_code: str | None = None
-    end_airport_name: str | None = None
-    end_airport_latitude: Decimal | None = None
-    end_airport_longitude: Decimal | None = None
-    end_city_name: str | None = None
-    end_country_code: str | None = None
-    end_gate: str | None = None
-    end_terminal: str | None = None
-    marketing_airline: str | None = None
-    marketing_airline_code: str | None = None
-    marketing_flight_number: str | None = None
-    operating_airline: str | None = None
-    operating_airline_code: str | None = None
-    operating_flight_number: str | None = None
-    alternate_flights_url: str | None = None
-    aircraft: str | None = None
-    aircraft_display_name: str | None = None
-    distance: str | None = None
-    duration: str | None = None
-    entertainment: str | None = None
-    meal: str | None = None
-    notes: str | None = None
-    ontime_perc: str | None = None
-    seats: str | None = None
-    service_class: str | None = None
-    stops: str | None = None
-    baggage_claim: str | None = None
-    check_in_url: str | None = None
-    mobile_check_in_url: str | None = None
-    refund_info_url: str | None = None
-    mobile_refund_info_url: str | None = None
-    change_reservation_url: str | None = None
-    mobile_change_reservation_url: str | None = None
-    customer_support_url: str | None = None
-    mobile_customer_support_url: str | None = None
-    general_fees_url: str | None = None
-    web_home_url: str | None = None
-    mobile_home_url: str | None = None
-    is_eligible_seattracker: TripItBool | None = None
-    conflict_resolution_url: str | None = None
-    is_hidden: TripItBool | None = None
-    id: TripItId | None = None
-    uuid: str | None = None
-    is_international: TripItBool | None = None
-    does_cross_idl: TripItBool | None = None
-    # CO2/emissions data (added by TripIt mid-2024). Shape isn't in the XSD;
-    # tolerate any nested structure.
-    emissions: dict[str, Any] | None = Field(default=None, alias="Emissions")
+class AirSegment(TripItModel, tag="AirSegment"):
+    status: FlightStatus | None = element(tag="Status", default=None)
+    seat_tracker_subscription: SeatTrackerSubscription | None = element(
+        tag="SeatTrackerSubscription", default=None
+    )
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    start_airport_code: str | None = element(default=None)
+    start_airport_name: str | None = element(default=None)
+    start_airport_latitude: Decimal | None = element(default=None)
+    start_airport_longitude: Decimal | None = element(default=None)
+    start_city_name: str | None = element(default=None)
+    start_country_code: str | None = element(default=None)
+    start_gate: str | None = element(default=None)
+    start_terminal: str | None = element(default=None)
+    end_airport_code: str | None = element(default=None)
+    end_airport_name: str | None = element(default=None)
+    end_airport_latitude: Decimal | None = element(default=None)
+    end_airport_longitude: Decimal | None = element(default=None)
+    end_city_name: str | None = element(default=None)
+    end_country_code: str | None = element(default=None)
+    end_gate: str | None = element(default=None)
+    end_terminal: str | None = element(default=None)
+    marketing_airline: str | None = element(default=None)
+    marketing_airline_code: str | None = element(default=None)
+    marketing_flight_number: str | None = element(default=None)
+    operating_airline: str | None = element(default=None)
+    operating_airline_code: str | None = element(default=None)
+    operating_flight_number: str | None = element(default=None)
+    alternate_flights_url: str | None = element(default=None)
+    aircraft: str | None = element(default=None)
+    aircraft_display_name: str | None = element(default=None)
+    distance: str | None = element(default=None)
+    duration: str | None = element(default=None)
+    entertainment: str | None = element(default=None)
+    meal: str | None = element(default=None)
+    notes: str | None = element(default=None)
+    ontime_perc: str | None = element(default=None)
+    seats: str | None = element(default=None)
+    service_class: str | None = element(default=None)
+    stops: str | None = element(default=None)
+    baggage_claim: str | None = element(default=None)
+    check_in_url: str | None = element(default=None)
+    mobile_check_in_url: str | None = element(default=None)
+    refund_info_url: str | None = element(default=None)
+    mobile_refund_info_url: str | None = element(default=None)
+    change_reservation_url: str | None = element(default=None)
+    mobile_change_reservation_url: str | None = element(default=None)
+    customer_support_url: str | None = element(default=None)
+    mobile_customer_support_url: str | None = element(default=None)
+    general_fees_url: str | None = element(default=None)
+    web_home_url: str | None = element(default=None)
+    mobile_home_url: str | None = element(default=None)
+    is_eligible_seattracker: bool | None = element(default=None)
+    conflict_resolution_url: str | None = element(default=None)
+    is_hidden: bool | None = element(default=None)
+    id: str | None = element(default=None)
+    uuid: str | None = element(default=None)
+    is_international: bool | None = element(default=None)
+    does_cross_idl: bool | None = element(default=None)
 
 
-class AirObject(BaseReservationObject):
-    segments: list[AirSegment] = Field(default_factory=list, alias="Segment")
-    travelers: list[Traveler] = Field(default_factory=list, alias="Traveler")
-
-    @field_validator("segments", "travelers", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class AirObject(BaseReservationObject, tag="AirObject"):
+    segments: list[AirSegment] = element(tag="Segment", default_factory=list)
+    travelers: list[Traveler] = element(tag="Traveler", default_factory=list)
 
 
 # ---------- Lodging ----------
 
 
-class LodgingObject(BaseReservationObject):
-    estimated_start_date_time: DateTime | None = Field(default=None, alias="EstimatedStartDateTime")
-    estimated_end_date_time: DateTime | None = Field(default=None, alias="EstimatedEndDateTime")
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    address: Address | None = Field(default=None, alias="Address")
-    guests: list[Traveler] = Field(default_factory=list, alias="Guest")
-    number_guests: str | None = None
-    number_rooms: str | None = None
-    room_type: str | None = None
-    bic_code: str | None = None
-
-    @field_validator("guests", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class LodgingObject(BaseReservationObject, tag="LodgingObject"):
+    estimated_start_date_time: DateTime | None = element(tag="EstimatedStartDateTime", default=None)
+    estimated_end_date_time: DateTime | None = element(tag="EstimatedEndDateTime", default=None)
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    address: Address | None = element(tag="Address", default=None)
+    guests: list[Traveler] = element(tag="Guest", default_factory=list)
+    number_guests: str | None = element(default=None)
+    number_rooms: str | None = element(default=None)
+    room_type: str | None = element(default=None)
+    bic_code: str | None = element(default=None)
 
 
 # ---------- Car ----------
 
 
-class CarObject(BaseReservationObject):
-    estimated_start_date_time: DateTime | None = Field(default=None, alias="EstimatedStartDateTime")
-    estimated_end_date_time: DateTime | None = Field(default=None, alias="EstimatedEndDateTime")
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    start_location_address: Address | None = Field(default=None, alias="StartLocationAddress")
-    end_location_address: Address | None = Field(default=None, alias="EndLocationAddress")
-    reservation_holder: Traveler | None = Field(default=None, alias="ReservationHolder")
-    drivers: list[Traveler] = Field(default_factory=list, alias="Driver")
-    start_location_hours: str | None = None
-    start_location_name: str | None = None
-    start_location_phone: str | None = None
-    end_location_hours: str | None = None
-    end_location_name: str | None = None
-    end_location_phone: str | None = None
-    car_description: str | None = None
-    car_type: str | None = None
-    mileage_charges: str | None = None
-
-    @field_validator("drivers", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class CarObject(BaseReservationObject, tag="CarObject"):
+    estimated_start_date_time: DateTime | None = element(tag="EstimatedStartDateTime", default=None)
+    estimated_end_date_time: DateTime | None = element(tag="EstimatedEndDateTime", default=None)
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    start_location_address: Address | None = element(tag="StartLocationAddress", default=None)
+    end_location_address: Address | None = element(tag="EndLocationAddress", default=None)
+    reservation_holder: Traveler | None = element(tag="ReservationHolder", default=None)
+    drivers: list[Traveler] = element(tag="Driver", default_factory=list)
+    start_location_hours: str | None = element(default=None)
+    start_location_name: str | None = element(default=None)
+    start_location_phone: str | None = element(default=None)
+    end_location_hours: str | None = element(default=None)
+    end_location_name: str | None = element(default=None)
+    end_location_phone: str | None = element(default=None)
+    car_description: str | None = element(default=None)
+    car_type: str | None = element(default=None)
+    mileage_charges: str | None = element(default=None)
 
 
 # ---------- Parking ----------
 
 
-class ParkingObject(BaseReservationObject):
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    address: Address | None = Field(default=None, alias="Address")
-    location_hours: str | None = None
-    location_name: str | None = None
-    valet_ticket_num: str | None = None
-    location_phone: str | None = None
+class ParkingObject(BaseReservationObject, tag="ParkingObject"):
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    address: Address | None = element(tag="Address", default=None)
+    location_hours: str | None = element(default=None)
+    location_name: str | None = element(default=None)
+    valet_ticket_num: str | None = element(default=None)
+    location_phone: str | None = element(default=None)
 
 
 # ---------- Rail ----------
 
 
-class RailSegment(TripItModel):
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    start_station_address: Address | None = Field(default=None, alias="StartStationAddress")
-    end_station_address: Address | None = Field(default=None, alias="EndStationAddress")
-    start_station_name: str | None = None
-    end_station_name: str | None = None
-    carrier_name: str | None = None
-    coach_number: str | None = None
-    confirmation_num: str | None = None
-    seats: str | None = None
-    service_class: str | None = None
-    train_number: str | None = None
-    train_type: str | None = None
-    id: TripItId | None = None
-    uuid: str | None = None
+class RailSegment(TripItModel, tag="RailSegment"):
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    start_station_address: Address | None = element(tag="StartStationAddress", default=None)
+    end_station_address: Address | None = element(tag="EndStationAddress", default=None)
+    start_station_name: str | None = element(default=None)
+    end_station_name: str | None = element(default=None)
+    carrier_name: str | None = element(default=None)
+    coach_number: str | None = element(default=None)
+    confirmation_num: str | None = element(default=None)
+    seats: str | None = element(default=None)
+    service_class: str | None = element(default=None)
+    train_number: str | None = element(default=None)
+    train_type: str | None = element(default=None)
+    id: str | None = element(default=None)
+    uuid: str | None = element(default=None)
 
 
-class RailObject(BaseReservationObject):
-    segments: list[RailSegment] = Field(default_factory=list, alias="Segment")
-    travelers: list[Traveler] = Field(default_factory=list, alias="Traveler")
-
-    @field_validator("segments", "travelers", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class RailObject(BaseReservationObject, tag="RailObject"):
+    segments: list[RailSegment] = element(tag="Segment", default_factory=list)
+    travelers: list[Traveler] = element(tag="Traveler", default_factory=list)
 
 
 # ---------- Transport ----------
 
 
-class TransportSegment(TripItModel):
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    start_location_address: Address | None = Field(default=None, alias="StartLocationAddress")
-    end_location_address: Address | None = Field(default=None, alias="EndLocationAddress")
-    start_location_name: str | None = None
-    end_location_name: str | None = None
-    detail_type_code: str | None = None
-    carrier_name: str | None = None
-    confirmation_num: str | None = None
-    number_passengers: str | None = None
-    vehicle_description: str | None = None
-    id: TripItId | None = None
-    uuid: str | None = None
+class TransportSegment(TripItModel, tag="TransportSegment"):
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    start_location_address: Address | None = element(tag="StartLocationAddress", default=None)
+    end_location_address: Address | None = element(tag="EndLocationAddress", default=None)
+    start_location_name: str | None = element(default=None)
+    end_location_name: str | None = element(default=None)
+    detail_type_code: str | None = element(default=None)
+    carrier_name: str | None = element(default=None)
+    confirmation_num: str | None = element(default=None)
+    number_passengers: str | None = element(default=None)
+    vehicle_description: str | None = element(default=None)
+    id: str | None = element(default=None)
+    uuid: str | None = element(default=None)
 
 
-class TransportObject(BaseReservationObject):
-    segments: list[TransportSegment] = Field(default_factory=list, alias="Segment")
-    travelers: list[Traveler] = Field(default_factory=list, alias="Traveler")
-
-    @field_validator("segments", "travelers", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class TransportObject(BaseReservationObject, tag="TransportObject"):
+    segments: list[TransportSegment] = element(tag="Segment", default_factory=list)
+    travelers: list[Traveler] = element(tag="Traveler", default_factory=list)
 
 
 # ---------- Cruise ----------
 
 
-class CruiseSegment(TripItModel):
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    location_address: Address | None = Field(default=None, alias="LocationAddress")
-    location_name: str | None = None
-    detail_type_code: str | None = None
-    id: TripItId | None = None
-    uuid: str | None = None
+class CruiseSegment(TripItModel, tag="CruiseSegment"):
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    location_address: Address | None = element(tag="LocationAddress", default=None)
+    location_name: str | None = element(default=None)
+    detail_type_code: str | None = element(default=None)
+    id: str | None = element(default=None)
+    uuid: str | None = element(default=None)
 
 
-class CruiseObject(BaseReservationObject):
-    segments: list[CruiseSegment] = Field(default_factory=list, alias="Segment")
-    travelers: list[Traveler] = Field(default_factory=list, alias="Traveler")
-    cabin_number: str | None = None
-    cabin_type: str | None = None
-    dining: str | None = None
-    ship_name: str | None = None
-
-    @field_validator("segments", "travelers", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class CruiseObject(BaseReservationObject, tag="CruiseObject"):
+    segments: list[CruiseSegment] = element(tag="Segment", default_factory=list)
+    travelers: list[Traveler] = element(tag="Traveler", default_factory=list)
+    cabin_number: str | None = element(default=None)
+    cabin_type: str | None = element(default=None)
+    dining: str | None = element(default=None)
+    ship_name: str | None = element(default=None)
 
 
 # ---------- Restaurant ----------
 
 
-class RestaurantObject(BaseReservationObject):
-    date_time: DateTime | None = Field(default=None, alias="DateTime")
-    address: Address | None = Field(default=None, alias="Address")
-    reservation_holder: Traveler | None = Field(default=None, alias="ReservationHolder")
-    attendees: list[Traveler] = Field(default_factory=list, alias="Attendee")
-    cuisine: str | None = None
-    dress_code: str | None = None
-    hours: str | None = None
-    number_patrons: str | None = None
-    price_range: str | None = None
-
-    @field_validator("attendees", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class RestaurantObject(BaseReservationObject, tag="RestaurantObject"):
+    date_time: DateTime | None = element(tag="DateTime", default=None)
+    address: Address | None = element(tag="Address", default=None)
+    reservation_holder: Traveler | None = element(tag="ReservationHolder", default=None)
+    attendees: list[Traveler] = element(tag="Attendee", default_factory=list)
+    cuisine: str | None = element(default=None)
+    dress_code: str | None = element(default=None)
+    hours: str | None = element(default=None)
+    number_patrons: str | None = element(default=None)
+    price_range: str | None = element(default=None)
 
 
 # ---------- Activity ----------
 
 
-class ActivityObject(BaseReservationObject):
-    start_date_time: DateTime | None = Field(default=None, alias="StartDateTime")
-    end_date_time: DateTime | None = Field(default=None, alias="EndDateTime")
-    end_time: _dt.time | None = None
-    address: Address | None = Field(default=None, alias="Address")
-    participants: list[Traveler] = Field(default_factory=list, alias="Participant")
-    detail_type_code: str | None = None
-    location_name: str | None = None
-
-    @field_validator("participants", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class ActivityObject(BaseReservationObject, tag="ActivityObject"):
+    start_date_time: DateTime | None = element(tag="StartDateTime", default=None)
+    end_date_time: DateTime | None = element(tag="EndDateTime", default=None)
+    end_time: _dt.time | None = element(default=None)
+    address: Address | None = element(tag="Address", default=None)
+    participants: list[Traveler] = element(tag="Participant", default_factory=list)
+    detail_type_code: str | None = element(default=None)
+    location_name: str | None = element(default=None)
 
 
 # ---------- Plain objects (Note / Map / Directions / Weather) ----------
 
 
-class NoteObject(BaseObject):
-    date_time: DateTime | None = Field(default=None, alias="DateTime")
-    address: Address | None = Field(default=None, alias="Address")
-    detail_type_code: str | None = None
-    source: str | None = None
-    text: str | None = None
-    url: str | None = None
-    notes: str | None = None
+class NoteObject(BaseObject, tag="NoteObject"):
+    date_time: DateTime | None = element(tag="DateTime", default=None)
+    address: Address | None = element(tag="Address", default=None)
+    detail_type_code: str | None = element(default=None)
+    source: str | None = element(default=None)
+    text: str | None = element(default=None)
+    url: str | None = element(default=None)
+    notes: str | None = element(default=None)
 
 
-class MapObject(BaseObject):
-    date_time: DateTime | None = Field(default=None, alias="DateTime")
-    address: Address | None = Field(default=None, alias="Address")
+class MapObject(BaseObject, tag="MapObject"):
+    date_time: DateTime | None = element(tag="DateTime", default=None)
+    address: Address | None = element(tag="Address", default=None)
 
 
-class DirectionsObject(BaseObject):
-    date_time: DateTime | None = Field(default=None, alias="DateTime")
-    start_address: Address | None = Field(default=None, alias="StartAddress")
-    end_address: Address | None = Field(default=None, alias="EndAddress")
-    detail_type_code: str | None = None
+class DirectionsObject(BaseObject, tag="DirectionsObject"):
+    date_time: DateTime | None = element(tag="DateTime", default=None)
+    start_address: Address | None = element(tag="StartAddress", default=None)
+    end_address: Address | None = element(tag="EndAddress", default=None)
+    detail_type_code: str | None = element(default=None)
 
 
-class WeatherObject(BaseObject):
-    date: _dt.date | None = None
-    location: str | None = None
-    avg_high_temp_c: float | None = None
-    avg_low_temp_c: float | None = None
-    avg_wind_speed_kn: float | None = None
-    avg_precipitation_cm: float | None = None
-    avg_snow_depth_cm: float | None = None
+class WeatherObject(BaseObject, tag="WeatherObject"):
+    date: _dt.date | None = element(default=None)
+    location: str | None = element(default=None)
+    avg_high_temp_c: float | None = element(default=None)
+    avg_low_temp_c: float | None = element(default=None)
+    avg_wind_speed_kn: float | None = element(default=None)
+    avg_precipitation_cm: float | None = element(default=None)
+    avg_snow_depth_cm: float | None = element(default=None)

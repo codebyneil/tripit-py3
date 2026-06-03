@@ -1,65 +1,63 @@
-"""PointsProgram and its sub-types."""
+"""PointsProgram and its read-only sub-types."""
 
 from __future__ import annotations
 
 import datetime as _dt
-from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic_xml import element
 
-from tripit.models._base import TripItId, TripItModel
-
-
-def _wrap_in_list(value: Any) -> Any:
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return value
-    return [value]
+from tripit.models._base import TripItModel
 
 
-class PointsProgramActivity(TripItModel):
-    date: _dt.date | None = None
-    description: str | None = None
-    base: str | None = None
-    bonus: str | None = None
-    total: str | None = None
+class PointsProgramActivity(TripItModel, tag="Activity"):
+    date: _dt.date = element()
+    description: str | None = element(default=None)
+    base: str | None = element(default=None)
+    bonus: str | None = element(default=None)
+    total: str | None = element(default=None)
 
 
-class PointsProgramExpiration(TripItModel):
-    date: _dt.date | None = None
-    amount: str | None = None
+class PointsProgramExpiration(TripItModel, tag="Expiration"):
+    date: _dt.date = element()
+    amount: str | None = element(default=None)
 
 
-class PointsProgramSubAccount(TripItModel):
-    name: str | None = None
-    account_number: str | None = None
-    balance: str | None = None
+class PointsProgramSubAccount(TripItModel, tag="SubAccount"):
+    id: int = element()
+    account_number: str | None = element(default=None)
+    name: str | None = element(default=None)
+    nickname: str | None = element(default=None)
+    balance: str | None = element(default=None)
 
 
-class PointsProgram(TripItModel):
-    id: TripItId | None = None
-    name: str | None = None
-    account_number: str | None = None
-    account_login: str | None = None
-    balance: str | None = None
-    elite_status: str | None = None
-    elite_next_status: str | None = None
-    elite_ytd_qualify: str | None = None
-    elite_need_to_earn: str | None = None
-    last_modified: int | None = None
-
-    activities: list[PointsProgramActivity] = Field(
-        default_factory=list, alias="PointsProgramActivity"
-    )
-    expirations: list[PointsProgramExpiration] = Field(
-        default_factory=list, alias="PointsProgramExpiration"
-    )
-    sub_accounts: list[PointsProgramSubAccount] = Field(
-        default_factory=list, alias="PointsProgramSubAccount"
-    )
-
-    @field_validator("activities", "expirations", "sub_accounts", mode="before")
-    @classmethod
-    def _wrap(cls, value: Any) -> Any:
-        return _wrap_in_list(value)
+class PointsProgram(TripItModel, tag="PointsProgram"):
+    id: str | None = element(default=None)
+    name: str | None = element(default=None)
+    account_number: str | None = element(default=None)
+    account_login: str | None = element(default=None)
+    balance: str | None = element(default=None)
+    elite_status: str | None = element(default=None)
+    elite_next_status: str | None = element(default=None)
+    elite_ytd_qualify: str | None = element(default=None)
+    elite_need_to_earn: str | None = element(default=None)
+    last_modified: int | None = element(default=None)
+    last_fetched: int | None = element(default=None)
+    total_num_activities: int | None = element(default=None)
+    total_num_expirations: int | None = element(default=None)
+    error_message: str | None = element(default=None)
+    nickname: str | None = element(default=None)
+    last_fetch_account_state_code: int | None = element(default=None)
+    account_state_code: int | None = element(default=None)
+    is_dm_supported: bool | None = element(default=None)
+    is_editable: bool | None = element(default=None)
+    is_user_tracked: bool | None = element(default=None)
+    is_supported: bool | None = element(default=None)
+    unanswered_security_question_id: int | None = element(default=None)
+    unanswered_security_question: str | None = element(default=None)
+    lifetime_points: str | None = element(default=None)
+    supplier_code: str | None = element(default=None)
+    program_date: _dt.date | None = element(default=None)
+    activities: list[PointsProgramActivity] = element(tag="Activity", default_factory=list)
+    expirations: list[PointsProgramExpiration] = element(tag="Expiration", default_factory=list)
+    sub_accounts: list[PointsProgramSubAccount] = element(tag="SubAccount", default_factory=list)
+    url: str | None = element(default=None)

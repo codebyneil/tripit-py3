@@ -1,146 +1,114 @@
-"""Shared sub-models referenced by multiple TripIt object types."""
+"""Shared sub-models referenced by multiple TripIt object types.
+
+Every field name and element/attribute binding mirrors `tripit-api-obj-v1.xsd`
+verbatim. IDs are modelled as `str` (XML carries no numeric type and TripIt's
+IDs are opaque); counts and timestamps that the XSD types as `xs:integer` are
+`int`.
+"""
 
 from __future__ import annotations
 
 import datetime as _dt
 from decimal import Decimal
-from typing import Any
 
-from pydantic import Field, field_validator, model_validator
+from pydantic_xml import attr, element
 
-from tripit.models._base import TripItBool, TripItId, TripItModel
-
-
-class Address(TripItModel):
-    """A street address. TripIt uses this for trip locations and reservation venues."""
-
-    address: str | None = None
-    addr1: str | None = None
-    addr2: str | None = None
-    city: str | None = None
-    state: str | None = None
-    zip: str | None = None
-    country: str | None = None
-    latitude: Decimal | None = None
-    longitude: Decimal | None = None
+from tripit.models._base import TripItModel
 
 
-class DateTime(TripItModel):
-    """A date+time pair with optional timezone — TripIt's primary temporal type."""
-
-    date: _dt.date | None = None
-    time: _dt.time | None = None
-    timezone: str | None = None
-    is_timezone_manual: TripItBool | None = None
-    utc_offset: str | None = None
-
-
-class ImageData(TripItModel):
-    """Inline image payload used during create flows."""
-
-    type: str | None = None
-    name: str | None = None
-    data: str | None = None
+class Address(TripItModel, tag="Address"):
+    address: str | None = element(default=None)
+    addr1: str | None = element(default=None)
+    addr2: str | None = element(default=None)
+    city: str | None = element(default=None)
+    state: str | None = element(default=None)
+    zip: str | None = element(default=None)
+    country: str | None = element(default=None)
+    latitude: Decimal | None = element(default=None)
+    longitude: Decimal | None = element(default=None)
 
 
-class Image(TripItModel):
-    """A reference to an image hosted by TripIt (or in-flight image data on create)."""
-
-    id: TripItId | None = None
-    caption: str | None = None
-    url: str | None = None
-    secure_url: str | None = None
-    image_data: ImageData | None = Field(default=None, alias="ImageData")
-
-
-class Creator(TripItModel):
-    """Who created an object (consumer app key + user)."""
-
-    consumer_key: str | None = None
-    user_id: TripItId | None = None
-    display_name: str | None = None
-    relative_url: str | None = None
+class DateTime(TripItModel, tag="DateTime"):
+    date: _dt.date | None = element(default=None)
+    time: _dt.time | None = element(default=None)
+    timezone: str | None = element(default=None)
+    is_timezone_manual: bool | None = element(default=None)
+    utc_offset: str | None = element(default=None)
+    preferred_timezone: str | None = element(default=None)
 
 
-class Traveler(TripItModel):
-    """A person on a trip — sub-traveler of an air/rail/etc reservation."""
-
-    first_name: str | None = None
-    middle_name: str | None = None
-    last_name: str | None = None
-    frequent_traveler_num: str | None = None
-    frequent_traveler_supplier: str | None = None
-    meal_preference: str | None = None
-    seat_preference: str | None = None
-    ticket_num: str | None = None
+class ImageData(TripItModel, tag="ImageData"):
+    content: str | None = element(default=None)
+    mime_type: str | None = element(default=None)
 
 
-class Invitee(TripItModel):
-    """A user invited to view a trip or object."""
-
-    is_read_only: TripItBool | None = None
-    is_traveler: TripItBool | None = None
-    is_sent: TripItBool | None = None
-    is_owner: TripItBool | None = None
-    profile_ref: str | None = None
-    # Explicit field so the unknown-fields detector recognizes @attributes
-    # as consumed by us; excluded from dumps so round-trip stays stable.
-    attributes: dict[str, Any] | None = Field(default=None, alias="@attributes", exclude=True)
-
-    @model_validator(mode="before")
-    @classmethod
-    def _lift_profile_ref(cls, data: Any) -> Any:
-        # TripIt's JSON encodes XML attributes (`profile_ref` on <Invitee>)
-        # under an "@attributes" dict. Lift it into the flat field.
-        if isinstance(data, dict):
-            attrs = data.get("@attributes")
-            if isinstance(attrs, dict) and "profile_ref" in attrs:
-                merged = {**data}
-                merged.setdefault("profile_ref", attrs["profile_ref"])
-                return merged
-        return data
+class Image(TripItModel, tag="Image"):
+    caption: str | None = element(default=None)
+    url: str | None = element(default=None)
+    image_data: ImageData | None = element(tag="ImageData", default=None)
+    id: str | None = element(default=None)
+    uuid: str | None = element(default=None)
+    segment_id: str | None = element(default=None)
+    segment_uuid: str | None = element(default=None)
+    thumbnail_url: str | None = element(default=None)
 
 
-class TripPurpose(TripItModel):
-    """A tagged purpose for a trip (business, leisure, ...)."""
-
-    id: TripItId | None = None
-    purpose_name: str | None = None
-    is_auto_generated: TripItBool | None = None
+class Creator(TripItModel, tag="Creator"):
+    consumer_key: str | None = element(default=None)
+    consumer_name: str | None = element(default=None)
+    consumer_id: str | None = element(default=None)
 
 
-class TripPurposes(TripItModel):
-    """Container for one or more `TripPurpose` entries.
-
-    TripIt's JSON sometimes flattens a single TripPurpose into the wrapper,
-    so the wrapper itself can carry `is_auto_generated` and `purpose_type_code`
-    directly alongside the `TripPurpose` collection.
-    """
-
-    trip_purposes: list[TripPurpose] = Field(default_factory=list, alias="TripPurpose")
-    is_auto_generated: TripItBool | None = None
-    purpose_type_code: str | None = None
-
-    @field_validator("trip_purposes", mode="before")
-    @classmethod
-    def _wrap_single(cls, value: Any) -> Any:
-        if value is None:
-            return []
-        if isinstance(value, list):
-            return value
-        return [value]
+class Traveler(TripItModel, tag="Traveler"):
+    first_name: str | None = element(default=None)
+    middle_name: str | None = element(default=None)
+    last_name: str | None = element(default=None)
+    frequent_traveler_num: str | None = element(default=None)
+    frequent_traveler_supplier: str | None = element(default=None)
+    meal_preference: str | None = element(default=None)
+    seat_preference: str | None = element(default=None)
+    ticket_num: str | None = element(default=None)
 
 
-class Invitees(TripItModel):
-    """Container for trip/object invitees."""
+class Agency(TripItModel, tag="Agency"):
+    agency_conf_num: str | None = element(default=None)
+    agency_name: str | None = element(default=None)
+    agency_client_name: str | None = element(default=None)
+    agency_phone: str | None = element(default=None)
+    agency_email_address: str | None = element(default=None)
+    agency_url: str | None = element(default=None)
+    agency_contact: str | None = element(default=None)
+    partner_agency_id: str | None = element(default=None)
 
-    invitees: list[Invitee] = Field(default_factory=list, alias="Invitee")
 
-    @field_validator("invitees", mode="before")
-    @classmethod
-    def _wrap_single(cls, value: Any) -> Any:
-        if value is None:
-            return []
-        if isinstance(value, list):
-            return value
-        return [value]
+class PartnerAgency(TripItModel, tag="PartnerAgency"):
+    partner_agency_id: str = element()
+    partner_agency_name: str = element()
+    partner_agency_short_name: str = element()
+    partner_agency_logo_small_url: str | None = element(default=None)
+    partner_agency_logo_medium_url: str | None = element(default=None)
+    partner_agency_logo_large_url: str | None = element(default=None)
+
+
+class CancelUserAction(TripItModel, tag="CancelUserAction"):
+    action_code: str | None = element(default=None)
+    action_at: int | None = element(default=None)
+    action_by: str | None = element(default=None)
+
+
+class Invitee(TripItModel, tag="Invitee"):
+    profile_ref: str = attr()
+    is_read_only: bool = element()
+    is_traveler: bool = element()
+    is_owner: bool | None = element(default=None)
+    profile_ref_v2: str | None = element(default=None)
+    inviter_profile_ref: str | None = element(default=None)
+
+
+class Invitees(TripItModel, tag="Invitees"):
+    invitees: list[Invitee] = element(tag="Invitee", default_factory=list)
+
+
+class TripPurposes(TripItModel, tag="TripPurposes"):
+    purpose_type_code: str = element()
+    is_auto_generated: bool | None = element(default=None)

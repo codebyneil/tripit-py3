@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from decimal import Decimal
 
-from pydantic import Field, field_validator
+from pydantic_xml import element
 
 from tripit.models._base import TripItModel
+from tripit.models.common import PartnerAgency
 from tripit.models.objects import (
     ActivityObject,
     AirObject,
@@ -18,7 +19,6 @@ from tripit.models.objects import (
     MapObject,
     NoteObject,
     ParkingObject,
-    PartnerAgency,
     RailObject,
     RestaurantObject,
     TransportObject,
@@ -29,87 +29,50 @@ from tripit.models.profile import Profile
 from tripit.models.trip import Trip
 
 
-class Error(TripItModel):
-    """Per-entity error from a partially-successful request, or a hard failure."""
-
-    code: int
-    detailed_error_code: float | None = None
-    description: str
-    entity_type: str
-    timestamp: datetime
+class Error(TripItModel, tag="Error"):
+    code: int = element()
+    detailed_error_code: Decimal | None = element(default=None)
+    description: str = element()
+    entity_type: str = element()
+    timestamp: datetime = element()
 
 
-class Warning(TripItModel):
-    """Per-entity warning that didn't block the response."""
-
-    description: str
-    entity_type: str
-    timestamp: datetime
+class Warning(TripItModel, tag="Warning"):
+    description: str = element()
+    entity_type: str = element()
+    timestamp: datetime = element()
 
 
-class Response(TripItModel):
-    """Top-level wrapper for every TripIt API JSON response."""
+class Response(TripItModel, tag="Response"):
+    """Top-level wrapper for every TripIt API XML response."""
 
-    timestamp: int | None = None
-    num_bytes: int | None = None
-    errors: list[Error] = Field(default_factory=list, alias="Error")
-    warnings: list[Warning] = Field(default_factory=list, alias="Warning")
+    timestamp: int = element()
+    num_bytes: int = element()
+    errors: list[Error] = element(tag="Error", default_factory=list)
+    warnings: list[Warning] = element(tag="Warning", default_factory=list)
 
-    trips: list[Trip] = Field(default_factory=list, alias="Trip")
-    profiles: list[Profile] = Field(default_factory=list, alias="Profile")
-    points_programs: list[PointsProgram] = Field(default_factory=list, alias="PointsProgram")
-
-    air_objects: list[AirObject] = Field(default_factory=list, alias="AirObject")
-    lodging_objects: list[LodgingObject] = Field(default_factory=list, alias="LodgingObject")
-    car_objects: list[CarObject] = Field(default_factory=list, alias="CarObject")
-    rail_objects: list[RailObject] = Field(default_factory=list, alias="RailObject")
-    transport_objects: list[TransportObject] = Field(default_factory=list, alias="TransportObject")
-    cruise_objects: list[CruiseObject] = Field(default_factory=list, alias="CruiseObject")
-    restaurant_objects: list[RestaurantObject] = Field(
-        default_factory=list, alias="RestaurantObject"
+    trips: list[Trip] = element(tag="Trip", default_factory=list)
+    activity_objects: list[ActivityObject] = element(tag="ActivityObject", default_factory=list)
+    air_objects: list[AirObject] = element(tag="AirObject", default_factory=list)
+    car_objects: list[CarObject] = element(tag="CarObject", default_factory=list)
+    cruise_objects: list[CruiseObject] = element(tag="CruiseObject", default_factory=list)
+    directions_objects: list[DirectionsObject] = element(
+        tag="DirectionsObject", default_factory=list
     )
-    activity_objects: list[ActivityObject] = Field(default_factory=list, alias="ActivityObject")
-    note_objects: list[NoteObject] = Field(default_factory=list, alias="NoteObject")
-    map_objects: list[MapObject] = Field(default_factory=list, alias="MapObject")
-    directions_objects: list[DirectionsObject] = Field(
-        default_factory=list, alias="DirectionsObject"
+    lodging_objects: list[LodgingObject] = element(tag="LodgingObject", default_factory=list)
+    map_objects: list[MapObject] = element(tag="MapObject", default_factory=list)
+    note_objects: list[NoteObject] = element(tag="NoteObject", default_factory=list)
+    parking_objects: list[ParkingObject] = element(tag="ParkingObject", default_factory=list)
+    rail_objects: list[RailObject] = element(tag="RailObject", default_factory=list)
+    restaurant_objects: list[RestaurantObject] = element(
+        tag="RestaurantObject", default_factory=list
     )
-    parking_objects: list[ParkingObject] = Field(default_factory=list, alias="ParkingObject")
-    weather_objects: list[WeatherObject] = Field(default_factory=list, alias="WeatherObject")
-    partner_agencies: list[PartnerAgency] = Field(default_factory=list, alias="PartnerAgency")
+    transport_objects: list[TransportObject] = element(tag="TransportObject", default_factory=list)
+    weather_objects: list[WeatherObject] = element(tag="WeatherObject", default_factory=list)
+    partner_agencies: list[PartnerAgency] = element(tag="PartnerAgency", default_factory=list)
+    points_programs: list[PointsProgram] = element(tag="PointsProgram", default_factory=list)
+    profiles: list[Profile] = element(tag="Profile", default_factory=list)
 
-    page_num: int | None = None
-    page_size: int | None = None
-    max_page: int | None = None
-    total_items: int | None = None
-
-    @field_validator(
-        "errors",
-        "warnings",
-        "trips",
-        "profiles",
-        "points_programs",
-        "air_objects",
-        "lodging_objects",
-        "car_objects",
-        "rail_objects",
-        "transport_objects",
-        "cruise_objects",
-        "restaurant_objects",
-        "activity_objects",
-        "note_objects",
-        "map_objects",
-        "directions_objects",
-        "parking_objects",
-        "weather_objects",
-        "partner_agencies",
-        mode="before",
-    )
-    @classmethod
-    def _wrap_single(cls, value: Any) -> Any:
-        """TripIt sometimes returns a bare object instead of a single-element list."""
-        if value is None:
-            return []
-        if isinstance(value, list):
-            return value
-        return [value]
+    page_num: int | None = element(default=None)
+    page_size: int | None = element(default=None)
+    max_page: int | None = element(default=None)
