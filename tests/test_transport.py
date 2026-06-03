@@ -184,20 +184,20 @@ def test_format_xml_is_always_sent() -> None:
 
 @respx.mock
 def test_request_raw_returns_wire_xml_unparsed() -> None:
-    """request_raw returns the XML text as-sent, including out-of-schema elements."""
-    body = _load("air_with_emissions.xml")
+    """request_raw returns the XML text as-sent, including unknown elements."""
+    body = _load("air_with_unknown_element.xml")
     respx.get("https://api.tripit.example/v1/get/air").mock(
         return_value=httpx.Response(200, content=body)
     )
     with _transport() as t:
         raw = t.request_raw("GET", "/v1/get/air")
-    assert "<Emissions>" in raw  # strict parser would reject this; raw keeps it
+    assert "<TotallyMadeUpTripItField>" in raw  # strict parser rejects; raw keeps it
 
 
 @respx.mock
 def test_strict_parse_rejects_out_of_schema_element() -> None:
     respx.get("https://api.tripit.example/v1/get/air").mock(
-        return_value=httpx.Response(200, content=_load("air_with_emissions.xml"))
+        return_value=httpx.Response(200, content=_load("air_with_unknown_element.xml"))
     )
     with _transport() as t, pytest.raises(TripItValidationError):
         t.request_xml("GET", "/v1/get/air")

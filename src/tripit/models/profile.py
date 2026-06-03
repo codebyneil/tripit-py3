@@ -73,8 +73,21 @@ class AiImport(TripItModel, tag="AiImport"):
     introduced_feature_webapp_ts: int | None = element(default=None)
 
 
+class AppleFoundationModel(TripItModel, tag="AppleFoundationModel"):
+    """TripIt extension under UserSettings — NOT in the published XSD.
+
+    Confirmed emitted by the live API (alongside AiImport). Modelled explicitly
+    so strict parsing accepts it; fields are best-effort from observed wire data.
+    """
+
+    is_opted_in: bool | None = element(default=None)
+
+
 class UserSettings(TripItModel, tag="UserSettings"):
     ai_import: AiImport | None = element(tag="AiImport", default=None)
+    apple_foundation_model: AppleFoundationModel | None = element(
+        tag="AppleFoundationModel", default=None
+    )
 
 
 class BillingPeriod(TripItModel, tag="BillingPeriod"):

@@ -104,8 +104,20 @@ class FlightStatus(TripItModel, tag="FlightStatus"):
     last_modified: int = element()
 
 
+class Emissions(TripItModel, tag="Emissions"):
+    """TripIt extension on AirSegment — NOT in the published XSD.
+
+    Confirmed emitted by the live API as ``<Emissions><co2>..</co2></Emissions>``.
+    Modelled explicitly so strict parsing accepts it; `co2` is the only field
+    observed so far.
+    """
+
+    co2: Decimal | None = element(default=None)
+
+
 class AirSegment(TripItModel, tag="AirSegment"):
     status: FlightStatus | None = element(tag="Status", default=None)
+    emissions: Emissions | None = element(tag="Emissions", default=None)
     seat_tracker_subscription: SeatTrackerSubscription | None = element(
         tag="SeatTrackerSubscription", default=None
     )

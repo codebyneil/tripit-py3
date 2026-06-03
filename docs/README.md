@@ -18,11 +18,20 @@ validate generated `<Request>` payloads at runtime. The models bind directly to
 these XSDs with `pydantic-xml`.
 
 **Strict by design.** Parsing is strict (`extra="forbid"`): any element or
-attribute not in the XSD raises rather than being silently dropped. TripIt does
-emit a few out-of-schema fields in the wild (e.g. `Emissions` on `AirSegment`,
-`AppleFoundationModel` under `UserSettings`); under strict mode these surface as
-loud failures instead of being absorbed, so drift is visible and dealt with
-deliberately. `tests/fixtures/xml/air_with_emissions.xml` pins this behavior.
+attribute not in the XSD raises rather than being silently dropped.
+
+TripIt emits a handful of fields that are **not in the published XSD**. These
+were discovered by running strict parsing against the live API and are now
+modelled explicitly (so they parse) and marked in the code as extensions:
+
+- `AirSegment` → `Emissions` (`<co2>`)
+- `UserSettings` → `AppleFoundationModel` (`<is_opted_in>`)
+- `Trip` → `is_trip_owner_inner_circle_sharer`
+- `Response` → `total_items`
+
+Anything *else* not in the schema still fails loudly — that's the point: new
+drift surfaces immediately instead of being absorbed.
+`tests/fixtures/xml/air_with_unknown_element.xml` pins that rejection behavior.
 
 ## Coverage & intentional exclusions
 

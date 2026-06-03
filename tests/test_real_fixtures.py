@@ -24,7 +24,9 @@ from tripit.models import Response
 XML_DIR = Path(__file__).parent / "fixtures" / "xml"
 OBJ_XSD = Path(__file__).parent.parent / "src" / "tripit" / "schemas" / "tripit-api-obj-v1.xsd"
 
-GOOD_FIXTURES = sorted(p for p in XML_DIR.glob("*.xml") if p.name != "air_with_emissions.xml")
+GOOD_FIXTURES = sorted(
+    p for p in XML_DIR.glob("*.xml") if p.name != "air_with_unknown_element.xml"
+)
 
 # XSD complexTypes we deliberately don't model: collaboration / request-action
 # shapes (see docs/README.md "Coverage & intentional exclusions").
@@ -80,7 +82,13 @@ def test_excluded_types_are_really_absent() -> None:
     assert not leaked, f"types claimed excluded but actually modeled: {leaked}"
 
 
-def test_known_deviation_is_rejected() -> None:
-    payload = (XML_DIR / "air_with_emissions.xml").read_bytes()
+def test_unknown_element_is_rejected() -> None:
+    """A genuinely-unknown element must fail strict parsing.
+
+    Known TripIt extensions (Emissions, AppleFoundationModel,
+    is_trip_owner_inner_circle_sharer, total_items) are modelled and accepted;
+    this guards against silently dropping *new*, un-handled drift.
+    """
+    payload = (XML_DIR / "air_with_unknown_element.xml").read_bytes()
     with pytest.raises(ValidationError):
         Response.from_xml(payload)

@@ -62,3 +62,6 @@ class Trip(TripItModel, tag="Trip"):
     group_invitees: GroupInvitees | None = element(tag="GroupInvitees", default=None)
     is_owner_traveler: bool | None = element(default=None)
     trip_statuses: TripStatuses | None = element(tag="TripStatuses", default=None)
+    # TripIt extension — NOT in the published XSD, but emitted on every trip
+    # (confirmed against the live API). Modelled so strict parsing accepts it.
+    is_trip_owner_inner_circle_sharer: bool | None = element(default=None)

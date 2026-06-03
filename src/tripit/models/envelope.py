@@ -76,3 +76,7 @@ class Response(TripItModel, tag="Response"):
     page_num: int | None = element(default=None)
     page_size: int | None = element(default=None)
     max_page: int | None = element(default=None)
+    # TripIt extension — NOT in tripit-api-res-v1.xsd, but emitted on list
+    # responses (confirmed against the live API). Modelled so strict parsing
+    # accepts it. (Opt-in response XSD validation will still flag it, by design.)
+    total_items: int | None = element(default=None)
