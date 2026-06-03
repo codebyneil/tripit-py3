@@ -1,0 +1,1268 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="UUID">
+    <xs:restriction base="xs:string">
+      <xs:pattern
+              value="[0-9a-f]{8}-?[0-9a-f]{4}-?9[0-9a-f]{3}-?[0-9a-f]{4}-?[0-9a-f]{12}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NullableUUID">
+    <xs:restriction base="xs:string">
+      <xs:pattern
+              value="([0-9a-f]{8}-?[0-9a-f]{4}-?9[0-9a-f]{3}-?[0-9a-f]{4}-?[0-9a-f]{12})?"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- abstract types used in travel objects -->
+
+  <xs:complexType name="Address">
+    <xs:all>
+      <!--
+      For create, use either:
+      - address for single-line addresses.
+      - addr1, addr2, city, state, zip, and country for multi-line addresses.
+      Multi-line address will be ignored if single-line address is present.
+      See documentation for more information.
+      -->
+      <xs:element maxOccurs="1" minOccurs="0" name="address" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="addr1" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="addr2" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="city" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="state" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="zip" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="country" type="xs:string"/>
+      <!-- latitude and longitude are read-only fields -->
+      <xs:element maxOccurs="1" minOccurs="0" name="latitude" type="xs:decimal"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="longitude" type="xs:decimal"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="Addresses">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="Address" type="Address"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Creator">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="consumer_key" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="consumer_name" type="xs:string"/>
+      <!-- privileged data - ignored unless internal service call - not used in response -->
+      <xs:element maxOccurs="1" minOccurs="0" name="consumer_id" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="Traveler">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="first_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="middle_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="frequent_traveler_num" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="frequent_traveler_supplier" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="meal_preference" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="seat_preference" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ticket_num" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:simpleType name="FlightStatusCode">
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="100"/> <!-- Not Monitorable -->
+      <xs:enumeration value="200"/> <!-- Not Monitored -->
+      <xs:enumeration value="300"/> <!-- Scheduled -->
+      <xs:enumeration value="301"/> <!-- On Time -->
+      <xs:enumeration value="302"/> <!-- In Flight - On Time -->
+      <xs:enumeration value="303"/> <!-- Arrived - On Time -->
+      <xs:enumeration value="400"/> <!-- Cancelled -->
+      <xs:enumeration value="401"/> <!-- Delayed -->
+      <xs:enumeration value="402"/> <!-- In Flight - Late -->
+      <xs:enumeration value="403"/> <!-- Arrived - Late -->
+      <xs:enumeration value="404"/> <!-- Diverted -->
+      <xs:enumeration value="405"/> <!-- Possibly Delayed -->
+      <xs:enumeration value="406"/> <!-- In Flight - Possibly Late -->
+      <xs:enumeration value="407"/> <!-- Arrived - Possibly Late -->
+      <xs:enumeration value="408"/> <!-- Unknown -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="FlightStatus">
+    <xs:all>
+      <!-- All FlightStatus fields are read-only and only available for monitored TripIt Pro AirSegments -->
+      <xs:element maxOccurs="1" minOccurs="0" name="ScheduledDepartureDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EstimatedDepartureDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ScheduledArrivalDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EstimatedArrivalDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="flight_status" type="FlightStatusCode"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_connection_at_risk" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="departure_terminal" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="departure_gate" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="arrival_terminal" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="arrival_gate" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="layover_minutes" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="baggage_claim" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="diverted_airport_code" type="AirportCode"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="last_modified" type="xs:integer"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:simpleType name="AirportCode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Z][A-Z][A-Z]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="AirlineCode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="([A-Z]|\d){2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="Image">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="caption" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ImageData" type="ImageData"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+      <!-- Only one will be read based on vApi version e.g. v1 = segment_id, v2 = segment_uuid, but both maybe be present with inclusion settings -->
+      <xs:element maxOccurs="1" minOccurs="0" name="segment_id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="segment_uuid" type="NullableUUID"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="thumbnail_url" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="ImageData">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="content" type="xs:base64Binary"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="mime_type">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="image/jpeg"/>
+            <xs:enumeration value="image/pjpeg"/>
+            <xs:enumeration value="image/x-citrix-pjpeg"/>
+            <xs:enumeration value="image/png"/>
+            <xs:enumeration value="image/x-png"/>
+            <xs:enumeration value="image/gif"/>
+            <xs:enumeration value="application/pdf"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="DateTime">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="date" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="time" type="xs:time"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="timezone" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_timezone_manual" type="xs:boolean"/>
+      <!-- utc_offset is read-only -->
+      <xs:element maxOccurs="1" minOccurs="0" name="utc_offset" type="xs:string"/>
+      <!-- preferred_timezone is write-only -->
+      <xs:element maxOccurs="1" minOccurs="0" name="preferred_timezone" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- All PointsProgram elements are read-only except for Datamapper -->
+  <xs:complexType name="PointsProgram">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="account_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="account_login" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="balance" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="elite_status" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="elite_next_status" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="elite_ytd_qualify" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="elite_need_to_earn" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_modified" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_fetched" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="total_num_activities" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="total_num_expirations" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="error_message" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="nickname" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_fetch_account_state_code" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="account_state_code" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_dm_supported" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_editable" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_user_tracked" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_supported" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="unanswered_security_question_id" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="unanswered_security_question" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="lifetime_points" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="supplier_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="program_date" type="xs:date"/>
+
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Activity" type="PointsProgramActivity"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Expiration" type="PointsProgramExpiration"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="SubAccount" type="PointsProgramSubAccount"/>
+
+      <xs:element maxOccurs="1" minOccurs="0" name="url" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All PointsProgramActivity elements are read-only -->
+  <xs:complexType name="PointsProgramActivity">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="date" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="base" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="bonus" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="total" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- All PointsProgramExpiration elements are read-only -->
+  <xs:complexType name="PointsProgramExpiration">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="date" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="amount" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- All PointsProgramSubAccount elements are read-only -->
+  <xs:complexType name="PointsProgramSubAccount">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="id" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="account_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="nickname" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="balance" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="TripShare">
+    <xs:all>
+      <!-- Only one will be read based on vApi version e.g. v1 = trip_id, v2 = trip_uuid, but both maybe be present with inclusion settings -->
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_uuid" type="UUID"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_traveler" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_read_only" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_sent_with_details" type="xs:boolean"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="TravelGroupTripShare">
+    <xs:all>
+      <!-- Only one will be read based on vApi version e.g. v1 = trip_id, v2 = trip_uuid, but both maybe be present with inclusion settings -->
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_uuid" type="UUID"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="travel_group_unique_name" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="ConnectionRequest">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_read_only" type="xs:boolean"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:simpleType name="EmailAddress">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[^@]+@[^\.]+\..+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="EmailAddresses">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="email_address" type="EmailAddress"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Invitation">
+    <xs:choice>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="1" name="EmailAddresses" type="EmailAddresses"/>
+        <xs:choice>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="TripShare" type="TripShare"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="ConnectionRequest" type="ConnectionRequest"/>
+          </xs:sequence>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="ConnectionRequest" type="ConnectionRequest"/>
+          </xs:sequence>
+        </xs:choice>
+        <xs:element maxOccurs="1" minOccurs="0" name="message" type="xs:string"/>
+      </xs:sequence>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="1" name="TravelGroupTripShare" type="TravelGroupTripShare"/>
+      </xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="TripInvitations">
+    <xs:sequence>
+      <!-- Only one will be read based on vApi version e.g. v1 = trip_id, v2 = trip_uuid, but both maybe be present with inclusion settings -->
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_uuid" type="UUID"/>
+      <xs:element minOccurs="1" name="Invitees" type="Invitees"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AdditionalFactor">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="type" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="display_name" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AdditionalFactors">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="AdditionalFactor" type="AdditionalFactor"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="UserSettings">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="AiImport" type="AiImport"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="AiImport">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_opt_in_visible" type="xs:boolean" />
+      <xs:element maxOccurs="1" minOccurs="0" name="is_opt_in_read_only" type="xs:boolean" />
+      <xs:element maxOccurs="1" minOccurs="0" name="is_opted_in" type="xs:boolean" />
+      <xs:element maxOccurs="1" minOccurs="0" name="opted_in_ts" type="xs:integer" />
+      <xs:element maxOccurs="1" minOccurs="0" name="introduced_feature_mobile_ts" type="xs:integer" />
+      <xs:element maxOccurs="1" minOccurs="0" name="introduced_feature_webapp_ts" type="xs:integer" />
+    </xs:all>
+  </xs:complexType>
+
+  <!-- All Profile elements are read-only -->
+  <xs:complexType name="Profile">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="ProfileEmailAddresses" type="ProfileEmailAddresses"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="NotificationSettings" type="NotificationSettings"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="GroupMemberships" type="GroupMemberships"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="AdditionalFactors" type="AdditionalFactors"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="UserSettings" type="UserSettings"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_client" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_pro" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="screen_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="public_display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="date_of_birth" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="profile_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="first_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="middle_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="home_city" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="home_country_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="home_airport" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="company" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="about_me_info" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="photo_url" type="xs:string"/>
+      <!-- deprecated no longer supported -->
+      <xs:element maxOccurs="1" minOccurs="0" name="activity_feed_url" type="xs:string"/>
+      <!-- deprecated no longer supported -->
+      <xs:element maxOccurs="1" minOccurs="0" name="alerts_feed_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ical_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="cal_user_display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_cal_detailed" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_cal_localtime" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_cal_including_notes" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_cal_including_sensitive_info" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="language_tag" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="date_endian_format" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="hour_clock" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="distance" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="temperature" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_auto_import" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="sms_phone_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="sms_country_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="sms_email_address" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="BillingPeriods" type="BillingPeriods"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_allow_pro_purchase" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_t4t_mobile_cal" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_legacy_paid_app_user" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_concur_linked" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="xs:string" />
+      <xs:element maxOccurs="1" minOccurs="0" name="jurisdiction" type="xs:string" />
+      <xs:element maxOccurs="1" minOccurs="0" name="is_enterprise_pro" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="risk_level" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="blocked_status" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="must_acknowledge_privacy_statement" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_privacy_statement_acknowledgement" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_public_trip_sharing_disabled" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="profile_ref_v2" type="xs:string"/>
+    </xs:all>
+    <xs:attribute name="ref" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- All ProfileEmailAddresses elements are read-only -->
+  <xs:complexType name="ProfileEmailAddresses">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="ProfileEmailAddress" type="ProfileEmailAddress"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All ProfileEmailAddress elements are read-only -->
+  <xs:complexType name="ProfileEmailAddress">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="uuid" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="uuid_ref" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="email_ref" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="address" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_auto_import" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_confirmed" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_primary" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_auto_inbox_eligible" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="import_trip_plan_sharing" type="ImportTripPlanSharing"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="LastAutoInboxFetchDateTime" type="DateTime"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:simpleType name="ImportTripPlanSharing">
+    <xs:restriction base="xs:string">
+      <!-- maps to ImportTripPurposeEmailAddressProperty::get_business_purpose_value() -->
+      <xs:enumeration value="concur_sharing_yes"/>
+      <!-- maps to ImportTripPurposeEmailAddressProperty::get_leisure_purpose_value() -->
+      <xs:enumeration value="concur_sharing_no"/>
+      <!-- implies concur linking is not supported or null/none ImportTripPurposeEmailAddressProperty -->
+      <xs:enumeration value="concur_sharing_none"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- All NotificationSettings elements are NOT read-only -->
+  <xs:complexType name="NotificationSettings">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="NotificationSetting" type="NotificationSetting"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All NotificationSetting elements are NOT read-only -->
+  <xs:complexType name="NotificationSetting">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="type" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_enabled" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_premium" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- All GroupMemberships elements are read-only -->
+  <xs:complexType name="GroupMemberships">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="Group" type="Group"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All Group elements are read-only -->
+  <xs:complexType name="Group">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="unique_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_free" type="xs:boolean"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- All BillingPeriods elements are read-only -->
+  <xs:complexType name="BillingPeriods">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="BillingPeriod" type="BillingPeriod"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All BillingPeriod elements are read-only -->
+  <xs:complexType name="BillingPeriod">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="product_type_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="end_date" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="hard_end_date" type="xs:date"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All TripInvitees elements are read-only -->
+  <xs:complexType name="Invitees">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="Invitee" type="Invitee"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All TripInvitees elements are read-only -->
+  <xs:complexType name="GroupInvitees">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="Group" type="Group"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All Invitee elements are read-only -->
+  <xs:complexType name="Invitee">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_read_only" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="is_traveler" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_owner" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="profile_ref_v2" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="inviter_profile_ref" type="xs:string"/>
+    </xs:all>
+    <!-- Use the profile_ref attribute to reference a Profile -->
+    <xs:attribute name="profile_ref" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- All TripCrsRemarks elements are read-only -->
+  <xs:complexType name="TripCrsRemarks">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="TripCrsRemark" type="TripCrsRemark"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- All TripCrsRemark elements are read-only -->
+  <xs:complexType name="TripCrsRemark">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="record_locator" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="notes" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="Trip">
+    <xs:all>
+      <!-- TripInvitees are read-only -->
+      <xs:element maxOccurs="1" minOccurs="0" name="TripInvitees" type="Invitees"/>
+      <!-- TripCrsRemarks are read-only -->
+      <xs:element maxOccurs="1" minOccurs="0" name="TripCrsRemarks" type="TripCrsRemarks"/>
+      <!-- id/uui is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+      <!-- relative_url is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="relative_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_date" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_date" type="xs:date"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="image_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_private" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="primary_location" type="xs:string"/>
+      <!-- PrimaryLocationAddress is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="PrimaryLocationAddress" type="Address"/>
+      <!-- is_expensible is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_expensible" type="xs:boolean"/>
+      <!-- is_pro_enabled is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_pro_enabled" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="TripPurposes" type="TripPurposes"/>
+      <!-- last_modified is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="last_modified" type="xs:integer"/>
+      <!-- GroupInvitees are read-only -->
+      <xs:element maxOccurs="1" minOccurs="0" name="GroupInvitees" type="GroupInvitees"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_owner_traveler" type="xs:boolean"/>
+      <!-- TripStatuses is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="TripStatuses" type="TripStatuses"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- If adding new elements to this block make sure to update ITApiV1Action class static field $xsd_base_object_v2_ordered_key_list -->
+  <xs:complexType name="Object">
+    <xs:sequence>
+      <!-- id is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <!-- uuid is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+      <!-- Only one will be read based on vApi version e.g. v1 = trip_id, v2 = trip_uuid, but both maybe be present with inclusion settings -->
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_id" type="xs:nonNegativeInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_uuid" type="NullableUUID"/>
+
+      <!-- is_client_traveler is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_client_traveler" type="xs:boolean"/>
+      <!-- relative_url is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="relative_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="display_name" type="xs:string"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Image" type="Image"/>
+      <!-- Creator is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="Creator" type="Creator"/>
+      <!-- is_display_name_auto_generated is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_display_name_auto_generated" type="xs:boolean"/>
+      <!-- last_modified is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="last_modified" type="xs:integer"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ReservationObject">
+    <xs:complexContent>
+      <xs:extension base="Object">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="CancelUserAction" type="CancelUserAction"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="CancellationDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_date" type="xs:date"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_rate" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_site_conf_num" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_site_name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_site_phone" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_site_email_address" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="booking_site_url" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="record_locator" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="supplier_conf_num" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="supplier_contact" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="supplier_email_address" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="supplier_name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="supplier_phone" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="supplier_url" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="is_purchased" type="xs:boolean"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="notes" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="restrictions" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="total_cost" type="xs:string"/>
+          <!-- is_tripit_booking is a read-only field -->
+          <xs:element maxOccurs="1" minOccurs="0" name="is_tripit_booking" type="xs:boolean"/>
+          <!-- has_possible_cancellation is a read-only field for non-TripIt apps -->
+          <xs:element maxOccurs="1" minOccurs="0" name="has_possible_cancellation" type="xs:boolean"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="Agency" type="Agency"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Agency">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_conf_num" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_client_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_phone" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_email_address" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="agency_contact" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="partner_agency_id" type="xs:positiveInteger"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="CancelUserAction">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="action_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="action_at" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="action_by" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="PartnerAgency">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="partner_agency_id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="partner_agency_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="partner_agency_short_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="partner_agency_logo_small_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="partner_agency_logo_medium_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="partner_agency_logo_large_url" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- Air -->
+
+  <!-- the following are complex, reservation object types: air, lodging, car, parking, rail transport, cruise, restaurant, activity, weather -->
+
+  <xs:complexType name="AirObject">
+    <!-- notes:  air fare rules should be in restrictions -->
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="Segment" type="AirSegment"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Traveler" type="Traveler"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AirSegment">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="Status" type="FlightStatus"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="SeatTrackerSubscription" type="SeatTrackerSubscription" />
+      <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_airport_code" type="AirportCode"/>
+      <!-- start_airport_name, start_airport_latitude and start_airport_longitude are read-only fields -->
+      <xs:element maxOccurs="1" minOccurs="0" name="start_airport_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_airport_latitude" type="xs:decimal"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_airport_longitude" type="xs:decimal"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_city_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_country_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_gate" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_terminal" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_airport_code" type="AirportCode"/>
+      <!-- end_airport_name, end_airport_latitude and end_airport_longitude are read-only fields -->
+      <xs:element maxOccurs="1" minOccurs="0" name="end_airport_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_airport_latitude" type="xs:decimal"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_airport_longitude" type="xs:decimal"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_city_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_country_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_gate" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_terminal" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="marketing_airline" type="xs:string"/>
+      <!-- marketing_airline_code is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="marketing_airline_code" type="AirlineCode"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="marketing_flight_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="operating_airline" type="xs:string"/>
+      <!-- operating_airline_code is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="operating_airline_code" type="AirlineCode"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="operating_flight_number" type="xs:string"/>
+      <!-- alternate_flights_url is a read-only relative url field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="alternate_flights_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="aircraft" type="xs:string"/>
+      <!-- aircraft_display_name is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="aircraft_display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="distance" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="duration" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="entertainment" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="meal" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="notes" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ontime_perc" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="seats" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="service_class" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="stops" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="baggage_claim" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="check_in_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="mobile_check_in_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="refund_info_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="mobile_refund_info_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="change_reservation_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="mobile_change_reservation_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="customer_support_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="mobile_customer_support_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="general_fees_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="web_home_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="mobile_home_url" type="xs:string"/>
+      <!-- is_eligible_seattracker is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_eligible_seattracker" type="xs:boolean"/>
+      <!-- conflict_resolution_url is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="conflict_resolution_url" type="xs:string"/>
+      <!-- is_hidden is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_hidden" type="xs:boolean"/>
+      <!-- id is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+      <!-- is_us_domestic is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_international" type="xs:boolean"/>
+      <!-- does_cross_idl is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="does_cross_idl" type="xs:boolean"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- Lodging -->
+  <xs:complexType name="LodgingObject">
+    <!-- notes:  hotel cancellation remarks should be in restrictions -->
+    <!--         hotel room description should be in notes -->
+    <!--         hotel average daily rate should be in booking_rate -->
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="EstimatedStartDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EstimatedEndDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="Address" type="Address"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Guest" type="Traveler"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="number_guests" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="number_rooms" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="room_type" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="bic_code" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Car -->
+  <xs:complexType name="CarObject">
+    <!-- notes:  car cancellation remarks should be in restrictions -->
+    <!--         car pickup instructions should be in notes -->
+    <!--         car daily rate should be in booking_rate -->
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="EstimatedStartDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EstimatedEndDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="StartLocationAddress" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EndLocationAddress" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="ReservationHolder" type="Traveler"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Driver" type="Traveler"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="start_location_hours" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="start_location_name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="start_location_phone" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="end_location_hours" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="end_location_name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="end_location_phone" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="car_description" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="car_type" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="mileage_charges" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Parking -->
+  <xs:complexType name="ParkingObject">
+    <!-- notes:  parking cancellation remarks should be in restrictions -->
+    <!--         parking drop-off/pick-up instructions should be in notes -->
+    <!--         parking daily rate should be in booking_rate -->
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="Address" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="location_hours" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="location_name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="valet_ticket_num" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="location_phone" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Rail -->
+  <xs:complexType name="RailSegment">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="StartStationAddress" type="Address"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EndStationAddress" type="Address"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_station_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_station_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="carrier_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="coach_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="confirmation_num" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="seats" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="service_class" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="train_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="train_type" type="xs:string"/>
+      <!-- id is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="RailObject">
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="Segment" type="RailSegment"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Traveler" type="Traveler"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Transport -->
+  <xs:simpleType name="TransportDetailTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="F"/> <!-- Ferry -->
+      <xs:enumeration value="G"/> <!-- Ground Transportation -->
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="TransportSegment">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="StartLocationAddress" type="Address"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EndLocationAddress" type="Address"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="start_location_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="end_location_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="detail_type_code" type="TransportDetailTypeCode"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="carrier_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="confirmation_num" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="number_passengers" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="vehicle_description" type="xs:string"/>
+      <!-- id is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="TransportObject">
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="Segment" type="TransportSegment"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Traveler" type="Traveler"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Cruise -->
+  <xs:simpleType name="CruiseDetailTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="P"/> <!-- Port Of Call -->
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="CruiseSegment">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="LocationAddress" type="Address"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="location_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="detail_type_code" type="CruiseDetailTypeCode"/>
+      <!-- id is a read-only fields -->
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="CruiseObject">
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="Segment" type="CruiseSegment"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Traveler" type="Traveler"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="cabin_number" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="cabin_type" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="dining" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="ship_name" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Restaurant -->
+  <xs:complexType name="RestaurantObject">
+    <!-- notes:  restaurant name should be in supplier_name -->
+    <!--         restaurant notes should be in notes -->
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="DateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="Address" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="ReservationHolder" type="Traveler"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Attendee" type="Traveler"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="cuisine" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="dress_code" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="hours" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="number_patrons" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="price_range" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- Activity -->
+  <xs:simpleType name="ActivityDetailTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="C"/> <!-- Concert -->
+      <xs:enumeration value="H"/> <!-- Theater -->
+      <xs:enumeration value="M"/> <!-- Meeting -->
+      <xs:enumeration value="T"/> <!-- Tour -->
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ActivityObject">
+    <xs:complexContent>
+      <xs:extension base="ReservationObject">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="StartDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EndDateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="end_time" type="xs:time"/> <!-- Leaving in end_date for backwards compatibility -->
+          <xs:element maxOccurs="1" minOccurs="0" name="Address" type="Address"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Participant" type="Traveler"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="detail_type_code" type="ActivityDetailTypeCode"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="location_name" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- the following are plain object types: note, map, directions -->
+
+  <!-- Note -->
+  <xs:simpleType name="NoteDetailTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="A"/> <!-- Article -->
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="NoteObject">
+    <xs:complexContent>
+      <xs:extension base="Object">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="DateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="Address" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="detail_type_code" type="NoteDetailTypeCode"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="source" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="text" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="url" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="notes" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Map -->
+  <xs:complexType name="MapObject">
+    <xs:complexContent>
+      <xs:extension base="Object">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="DateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="Address" type="Address"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Directions -->
+  <xs:simpleType name="DirectionsDetailTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="B"/> <!-- Bicycling -->
+      <xs:enumeration value="D"/> <!-- Driving -->
+      <xs:enumeration value="T"/> <!-- Transit -->
+      <xs:enumeration value="W"/> <!-- Walking -->
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="DirectionsObject">
+    <xs:complexContent>
+      <xs:extension base="Object">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="DateTime" type="DateTime"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="StartAddress" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="EndAddress" type="Address"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="detail_type_code" type="DirectionsDetailTypeCode"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="WeatherObject">
+    <xs:complexContent>
+      <xs:extension base="Object">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="0" name="date" type="xs:date"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="location" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="avg_high_temp_c" type="xs:double"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="avg_low_temp_c" type="xs:double"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="avg_wind_speed_kn" type="xs:double"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="avg_precipitation_cm" type="xs:double"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="avg_snow_depth_cm" type="xs:double"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TripPurposes">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="purpose_type_code" type="TripPurposeTypeCode"/>
+      <!-- is_auto_generated is a read-only field -->
+      <xs:element maxOccurs="1" minOccurs="0" name="is_auto_generated" type="xs:boolean"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="TripPurposeTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="B"/> <!-- Business -->
+      <xs:enumeration value="L"/> <!-- Leisure -->
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="SeatTrackerSearch">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="1" name="DepartureDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ArrivalDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="LastSearchDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="LastUpdatedDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="start_airport_code" type="AirportCode"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="end_airport_code" type="AirportCode"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="airline_code" type="AirlineCode"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="flight_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="airline_phone_number" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="airline_url" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="deactivation_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_search_timestamp" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_updated_timestamp" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:integer"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="SeatTrackerSubscription">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="SeatTrackerSearch" type="SeatTrackerSearch" />
+      <xs:element maxOccurs="1" minOccurs="0" name="SeatTrackerSubscriptionMatches" type="SeatTrackerSubscriptionMatches"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="SeatTrackerCriteria" type="SeatTrackerCriteria"/>
+      <!-- Only one will be read based on vApi version e.g. v1 = trip_item_id, v2 = trip_item_uuid, but both maybe be present with inclusion settings -->
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_item_id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="trip_item_uuid" type="UUID"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="seats" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="deactivation_code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_updated_timestamp" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="id" type="xs:positiveInteger"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="uuid" type="UUID"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="SeatTrackerSubscriptionMatches">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element maxOccurs="1" minOccurs="1" name="num_matches" type="xs:integer"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="matched_seats">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="0" name="matched_seat" type="AircraftSeatCode"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="match_index" type="xs:integer"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element maxOccurs="1" minOccurs="0" name="LastUpdatedDateTime" type="DateTime"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="last_updated_timestamp" type="xs:integer"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="SeatTrackerCriteria">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element maxOccurs="1" minOccurs="0" name="qualifier" type="xs:string"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="seat_preferences">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="seat_preference">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="window"/>
+                  <xs:enumeration value="aisle"/>
+                  <xs:enumeration value="middle"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="area_preferences">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="area_preference">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="over_wing"/>
+                  <xs:enumeration value="ahead_of_wing"/>
+                  <xs:enumeration value="behind_wing"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_find_first_class" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_find_premium_seats" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_find_economy_seats" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_find_exit_row" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="should_find_bulkhead_row" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="adjacent_seat_amount" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="individual_seat" type="AircraftSeatCode"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:simpleType name="AircraftSeatCode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d\d?[A-Z]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ITAircraftSeatMap">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="ITAircraftSeatMapSections">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="ITAircraftSeatMapSection" type="ITAircraftSeatMapSection" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ITAircraftSeatMapSection">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="column_header" type="xs:string"/>
+      <xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:integer"/>
+      <xs:element minOccurs="1" maxOccurs="1" name="is_upper_deck" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="ITAircraftSeatMapRows">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="ITAircraftSeatMapRow" type="ITAircraftSeatMapRow" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ITAircraftSeatMapRow">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="number" type="xs:integer" />
+      <xs:element maxOccurs="1" minOccurs="0" name="Attributes" type="ITAircraftSeatMapAttributes"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="ITAircraftSeatMapSeats">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="ITAircraftSeatMapSeat" type="ITAircraftSeatMapSeat" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ITAircraftSeatMapSeat">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="code" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="status" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="Attributes" type="ITAircraftSeatMapAttributes"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ITAircraftSeatMapAttributes">
+    <xs:all>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_ahead_of_wing" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_over_wing" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_behind_wing" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_exit_row" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_aisle" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_window" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_bulkhead" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_preferred" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_restricted" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_not_a_seat" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_restricted_recline" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_upper_deck" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_first_class" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_premium_class" type="xs:boolean"/>
+      <xs:element minOccurs="0" maxOccurs="1" name="is_economy_class" type="xs:boolean"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="TripItemShare">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="EmailAddresses" type="EmailAddresses"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="message" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ConnectionRequest" type="ConnectionRequest"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EmailMessage">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="EmailAddresses" type="EmailAddresses"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="message" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="ConnectionRequest" type="ConnectionRequest"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CrsTripDetails">
+    <xs:all>
+      <xs:element maxOccurs="1" minOccurs="0" name="company_key" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="display_name" type="xs:string"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="is_private" type="xs:boolean"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="TripPurposes" type="TripPurposes"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="TripStatuses">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="TripStatus" type="TripStatus"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TripStatus">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="status" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:include schemaLocation="tripit-api-obj-v1.xsd" />
+
+  <xs:complexType name="Error">
+    <xs:sequence>
+      <xs:element name="code"                type="xs:integer"  minOccurs="1" maxOccurs="1" />
+      <xs:element name="detailed_error_code" type="xs:decimal"  minOccurs="0" maxOccurs="1" />
+      <xs:element name="description"         type="xs:string"   minOccurs="1" maxOccurs="1" />
+      <xs:element name="entity_type"         type="xs:string"   minOccurs="1" maxOccurs="1" />
+      <xs:element name="timestamp"           type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Warning">
+    <xs:sequence>
+      <xs:element name="description" type="xs:string"   minOccurs="1" maxOccurs="1" />
+      <xs:element name="entity_type" type="xs:string"   minOccurs="1" maxOccurs="1" />
+      <xs:element name="timestamp"   type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Response">
+    <xs:sequence>
+      <xs:element maxOccurs="1" minOccurs="1" name="timestamp" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="num_bytes" type="xs:integer"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Error" type="Error"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Warning" type="Warning"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Trip" type="Trip"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="ActivityObject" type="ActivityObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="AirObject" type="AirObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="CarObject" type="CarObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="CruiseObject" type="CruiseObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="DirectionsObject" type="DirectionsObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="LodgingObject" type="LodgingObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="MapObject" type="MapObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="NoteObject" type="NoteObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="ParkingObject" type="ParkingObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="RailObject" type="RailObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="RestaurantObject" type="RestaurantObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="TransportObject" type="TransportObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="WeatherObject" type="WeatherObject"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="PartnerAgency" type="PartnerAgency"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="PointsProgram" type="PointsProgram"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="Profile" type="Profile"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="page_num" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="page_size" type="xs:integer"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="max_page" type="xs:integer"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="Response" type="Response">
+    <xs:keyref name="profileRef" refer="profileKey">
+      <xs:selector xpath=".//Invitee"/>
+      <xs:field xpath="@profile_ref"/>
+    </xs:keyref>
+    <xs:key name="profileKey">
+      <xs:selector xpath="./Profile"/>
+      <xs:field xpath="@ref"/>
+    </xs:key>
+  </xs:element>
+
+</xs:schema>

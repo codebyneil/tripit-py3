@@ -1,11 +1,11 @@
 """HTTP transport: one chokepoint for retries, timeouts, and envelope unwrap.
 
-Every request the client makes flows through `_Transport.request_json`. That
+Every request the client makes flows through `_Transport.request_xml`. That
 method:
 
-1. Performs the GET/POST via the shared `httpx.Client`.
+1. Performs the GET/POST via the shared `httpx.Client` (always `format=xml`).
 2. Maps non-2xx responses into the typed exception hierarchy.
-3. Decodes JSON and parses it into a `Response` model.
+3. Parses the XML body into a `Response` model via pydantic-xml.
 4. Raises if `Response.Error[]` is populated; logs `Response.Warning[]`.
 5. Retries on rate-limit / 5xx / transient network errors via tenacity.
 
@@ -19,6 +19,7 @@ import logging
 from typing import Any
 
 import httpx
+from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
 from pydantic import ValidationError
 from tenacity import (
     RetryError,
@@ -41,6 +42,7 @@ from tripit.exceptions import (
     TripItValidationError,
 )
 from tripit.models.envelope import Response
+from tripit.xml import validate_response_xml
 
 logger = logging.getLogger("tripit")
 
@@ -78,9 +80,11 @@ class _Transport:
         timeout: float | httpx.Timeout | None = None,
         limits: httpx.Limits | None = None,
         user_agent: str | None = None,
+        validate_responses: bool = False,
     ) -> None:
         if isinstance(timeout, (int, float)):
             timeout = httpx.Timeout(timeout)
+        self._validate_responses = validate_responses
         self._client = httpx.Client(
             base_url=api_url,
             auth=auth,
@@ -99,7 +103,7 @@ class _Transport:
     def __exit__(self, *exc: object) -> None:
         self.close()
 
-    def request_json(
+    def request_xml(
         self,
         method: str,
         path: str,
@@ -133,12 +137,13 @@ class _Transport:
         *,
         params: dict[str, Any] | None = None,
         data: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """Issue a request and return the parsed JSON dict without pydantic validation.
+    ) -> str:
+        """Issue a request and return the raw XML text without model parsing.
 
-        Used by the fixture-capture script to retain TripIt-emitted fields the
-        production parser would drop via `extra="ignore"`. Retries on the same
-        transient failures as `request_json` but skips envelope unwrapping.
+        Used by the fixture-capture script to retain the full wire payload
+        (including any out-of-schema elements the strict parser would reject).
+        Retries on the same transient failures as `request_xml` but skips
+        envelope unwrapping.
         """
 
         @retry(
@@ -147,7 +152,7 @@ class _Transport:
             stop=stop_after_attempt(5),
             reraise=True,
         )
-        def _do() -> dict[str, Any]:
+        def _do() -> str:
             return self._request_raw_once(method, path, params=params, data=data)
 
         try:
@@ -165,8 +170,8 @@ class _Transport:
         *,
         params: dict[str, Any] | None,
         data: dict[str, Any] | None,
-    ) -> dict[str, Any]:
-        merged = {**(params or {}), "format": "json"}
+    ) -> str:
+        merged = {**(params or {}), "format": "xml"}
         try:
             response = self._client.request(method, path, params=merged, data=data)
         except httpx.HTTPError as exc:
@@ -177,12 +182,7 @@ class _Transport:
             ) from exc
 
         self._raise_for_status(response)
-        try:
-            return response.json()
-        except ValueError as exc:
-            raise TripItValidationError(
-                f"response was not valid JSON: {response.text[:200]!r}"
-            ) from exc
+        return response.text
 
     def _request_once(
         self,
@@ -192,8 +192,8 @@ class _Transport:
         params: dict[str, Any] | None,
         data: dict[str, Any] | None,
     ) -> Response:
-        # Always request JSON.
-        params = {**(params or {}), "format": "json"}
+        # Always request XML.
+        params = {**(params or {}), "format": "xml"}
         try:
             response = self._client.request(method, path, params=params, data=data)
         except httpx.HTTPError as exc:
@@ -251,25 +251,18 @@ class _Transport:
             response_body=body,
         )
 
-    @staticmethod
-    def _parse_envelope(response: httpx.Response) -> Response:
+    def _parse_envelope(self, response: httpx.Response) -> Response:
+        payload = response.content
+        if self._validate_responses:
+            validate_response_xml(payload)
         try:
-            payload = response.json()
-        except ValueError as exc:
-            raise TripItValidationError(
-                f"response was not valid JSON: {response.text[:200]!r}"
-            ) from exc
-
-        # TripIt wraps everything in a top-level "Response" key.
-        if isinstance(payload, dict) and "Response" in payload:
-            envelope_data = payload["Response"]
-        else:
-            envelope_data = payload
-
-        try:
-            envelope = Response.model_validate(envelope_data)
+            envelope = Response.from_xml(payload)
         except ValidationError as exc:
             raise TripItValidationError(str(exc)) from exc
+        except etree.XMLSyntaxError as exc:
+            raise TripItValidationError(
+                f"response was not valid XML: {response.text[:200]!r}"
+            ) from exc
 
         if envelope.warnings:
             for warning in envelope.warnings:

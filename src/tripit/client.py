@@ -33,8 +33,8 @@ from tripit.models.points import PointsProgram
 from tripit.models.profile import Profile
 from tripit.models.trip import Trip
 from tripit.pagination import paginate
-from tripit.serialize import model_to_request_xml
 from tripit.transport import DEFAULT_API_URL, _Transport
+from tripit.xml import build_request_xml
 
 ObjectTypeName = Literal[
     "all",
@@ -66,6 +66,7 @@ class TripIt:
         api_url: str = DEFAULT_API_URL,
         timeout: float | None = 30.0,
         user_agent: str | None = None,
+        validate_responses: bool = False,
     ) -> None:
         auth = OAuth1Auth(
             consumer_key,
@@ -78,6 +79,7 @@ class TripIt:
             api_url=api_url,
             timeout=timeout,
             user_agent=user_agent,
+            validate_responses=validate_responses,
         )
 
     @classmethod
@@ -90,6 +92,7 @@ class TripIt:
         api_url: str = DEFAULT_API_URL,
         timeout: float | None = 30.0,
         user_agent: str | None = None,
+        validate_responses: bool = False,
     ) -> Self:
         """Construct a client using a 2-legged credential (no per-user token)."""
         instance = cls.__new__(cls)
@@ -103,6 +106,7 @@ class TripIt:
             api_url=api_url,
             timeout=timeout,
             user_agent=user_agent,
+            validate_responses=validate_responses,
         )
         return instance
 
@@ -122,7 +126,7 @@ class TripIt:
         params: dict[str, Any] = {}
         if include_objects:
             params["include_objects"] = "true"
-        envelope = self._transport.request_json(
+        envelope = self._transport.request_xml(
             "GET", f"/v1/get/trip/id/{trip_id}", params=params or None
         )
         if not envelope.trips:
@@ -150,7 +154,7 @@ class TripIt:
             base_params["include_objects"] = "true"
 
         def fetch_page(page_num: int) -> Response:
-            return self._transport.request_json(
+            return self._transport.request_xml(
                 "GET",
                 "/v1/list/trip",
                 params={**base_params, "page_num": str(page_num)},
@@ -161,13 +165,13 @@ class TripIt:
     # ----- Profile & points -----
 
     def get_profile(self) -> Profile:
-        envelope = self._transport.request_json("GET", "/v1/get/profile")
+        envelope = self._transport.request_xml("GET", "/v1/get/profile")
         if not envelope.profiles:
             raise TripItNotFoundError("No profile in response", status_code=404)
         return envelope.profiles[0]
 
     def get_points_program(self, program_id: str) -> PointsProgram:
-        envelope = self._transport.request_json("GET", f"/v1/get/points_program/id/{program_id}")
+        envelope = self._transport.request_xml("GET", f"/v1/get/points_program/id/{program_id}")
         if not envelope.points_programs:
             raise TripItNotFoundError(
                 f"PointsProgram {program_id} not in response", status_code=404
@@ -175,13 +179,13 @@ class TripIt:
         return envelope.points_programs[0]
 
     def list_points_programs(self) -> list[PointsProgram]:
-        envelope = self._transport.request_json("GET", "/v1/list/points_program")
+        envelope = self._transport.request_xml("GET", "/v1/list/points_program")
         return envelope.points_programs
 
     # ----- Reservation object reads -----
 
     def _get_single(self, entity: str, object_id: str, pluck: str) -> Any:
-        envelope = self._transport.request_json("GET", f"/v1/get/{entity}/id/{object_id}")
+        envelope = self._transport.request_xml("GET", f"/v1/get/{entity}/id/{object_id}")
         items = getattr(envelope, pluck)
         if not items:
             raise TripItNotFoundError(f"{entity} {object_id} not in response", status_code=404)
@@ -227,8 +231,8 @@ class TripIt:
 
     def _create(self, tag: str, model: Any, pluck: str) -> Any:
         """POST /v1/create with the serialized model. Returns the created object."""
-        xml = model_to_request_xml(tag, model)
-        envelope = self._transport.request_json("POST", "/v1/create", data={"xml": xml})
+        xml = build_request_xml(tag, model)
+        envelope = self._transport.request_xml("POST", "/v1/create", data={"xml": xml})
         items = getattr(envelope, pluck)
         if not items:
             raise TripItNotFoundError(f"Created {tag} not echoed back in response", status_code=200)
@@ -236,8 +240,8 @@ class TripIt:
 
     def _replace(self, entity: str, tag: str, object_id: str, model: Any, pluck: str) -> Any:
         """POST /v1/replace/<entity>/id/<id> with the serialized model."""
-        xml = model_to_request_xml(tag, model)
-        envelope = self._transport.request_json(
+        xml = build_request_xml(tag, model)
+        envelope = self._transport.request_xml(
             "POST", f"/v1/replace/{entity}/id/{object_id}", data={"xml": xml}
         )
         items = getattr(envelope, pluck)
@@ -248,10 +252,8 @@ class TripIt:
         return items[0]
 
     def _delete(self, entity: str, object_id: str) -> None:
-        # Note: docs say this should be GET, not POST. Tracked as follow-up bug
-        # in the plan — verifying which TripIt actually accepts requires a live
-        # call. Keeping POST for now (matches the 0.x library's behavior).
-        self._transport.request_json("POST", f"/v1/delete/{entity}/id/{object_id}")
+        # TripIt's documented delete is a GET to /v1/delete/<entity>/id/<id>.
+        self._transport.request_xml("GET", f"/v1/delete/{entity}/id/{object_id}")
 
     # Trip
     def create_trip(self, trip: Trip) -> Trip:
@@ -415,10 +417,10 @@ class TripIt:
         data: dict[str, str] = {"xml": xml_payload}
         if company_key is not None:
             data["company_key"] = company_key
-        return self._transport.request_json("POST", "/v1/crsLoadReservations", data=data)
+        return self._transport.request_xml("POST", "/v1/crsLoadReservations", data=data)
 
     def crs_delete_reservations(self, record_locator: str) -> None:
-        self._transport.request_json(
+        self._transport.request_xml(
             "POST",
             "/v1/crsDeleteReservations",
             data={"record_locator": record_locator},
@@ -451,7 +453,7 @@ class TripIt:
 
         page = 1
         while True:
-            envelope = self._transport.request_json(
+            envelope = self._transport.request_xml(
                 "GET",
                 "/v1/list/object",
                 params={**base_params, "page_num": str(page)},
