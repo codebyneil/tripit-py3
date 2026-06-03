@@ -1,4 +1,4 @@
-"""Walk the 3-legged TripIt OAuth 1.0a flow from a terminal.
+"""Walk the 3-legged TripIt OAuth 1.0 flow from a terminal.
 
     $ tripit-authorize --consumer-key K --consumer-secret S
 
@@ -74,7 +74,7 @@ def wait_for_manual_approval(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="tripit-authorize",
-        description="Walk the 3-legged TripIt OAuth 1.0a flow and print access tokens.",
+        description="Walk the 3-legged TripIt OAuth 1.0 flow and print access tokens.",
     )
     parser.add_argument("--consumer-key", help="TripIt API consumer key.")
     parser.add_argument("--consumer-secret", help="TripIt API consumer secret.")

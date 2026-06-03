@@ -23,9 +23,10 @@ from __future__ import annotations
 
 from pydantic import ConfigDict
 from pydantic_xml import BaseXmlModel
+from pydantic_xml.model import SearchMode
 
 
-class TripItModel(BaseXmlModel, search_mode="unordered"):
+class TripItModel(BaseXmlModel, search_mode=SearchMode.UNORDERED):
     """Base for every TripIt XML model. Strict, unordered, namespace-free."""
 
     model_config = ConfigDict(

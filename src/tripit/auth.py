@@ -1,4 +1,9 @@
-"""OAuth 1.0a signing for TripIt's v1 API.
+"""OAuth 1.0 signing for TripIt's v1 API.
+
+TripIt implements OAuth **Core 1.0** (not 1.0a): the `oauth_callback` is passed
+on the `/oauth/authorize` redirect, and there is no `oauth_verifier` /
+`oauth_callback_confirmed` in the handshake. See
+<https://tripit.github.io/api/doc/v1/#authentication>.
 
 This module provides:
 - `OAuth1Auth`, an `httpx.Auth` subclass that signs every outgoing request.
@@ -34,7 +39,7 @@ _AUTHORIZE_PATH: Final = "/oauth/authorize"
 
 
 def _escape(value: object) -> str:
-    """OAuth 1.0a percent-encoding (RFC 3986 unreserved chars + `~`)."""
+    """OAuth percent-encoding (RFC 3986 unreserved chars + `~`)."""
     return quote(str(value), safe="~")
 
 
@@ -55,7 +60,7 @@ class AccessToken:
 
 
 class OAuth1Auth(httpx.Auth):
-    """httpx.Auth that signs every request with OAuth 1.0a HMAC-SHA1.
+    """httpx.Auth that signs every request with OAuth 1.0 HMAC-SHA1.
 
     Supports all three TripIt OAuth credential modes:
     - 2-legged (consumer key + secret + requestor_id)
@@ -191,22 +196,17 @@ def get_request_token(
     consumer_key: str,
     consumer_secret: str,
     *,
-    oauth_callback: str | None = None,
     api_url: str = DEFAULT_API_URL,
 ) -> RequestToken:
-    """First leg of the OAuth 1.0a flow: obtain an unauthorized request token.
+    """First leg of the OAuth 1.0 flow: obtain an unauthorized request token.
 
-    If `oauth_callback` is provided it's sent as a form parameter (and thus
-    participates in the OAuth signature). TripIt requires the callback to
-    match one of the redirect URIs registered on the developer console, or
-    the issued token is silently flagged unusable by /oauth/authorize.
+    TripIt is OAuth Core 1.0, so the callback is NOT sent here — it goes on the
+    `/oauth/authorize` redirect (see `authorization_url`).
     """
-    body = {"oauth_callback": oauth_callback} if oauth_callback else None
     data = _exchange_token(
         consumer_key,
         consumer_secret,
         _REQUEST_TOKEN_PATH,
-        body=body,
         api_url=api_url,
     )
     return RequestToken(
@@ -234,22 +234,18 @@ def get_access_token(
     request_token: str,
     request_token_secret: str,
     *,
-    oauth_verifier: str | None = None,
     api_url: str = DEFAULT_API_URL,
 ) -> AccessToken:
-    """Final leg of the OAuth 1.0a flow: exchange a user-authorized request token.
+    """Final leg of the OAuth 1.0 flow: exchange a user-authorized request token.
 
-    Pass `oauth_verifier` if TripIt issued one during the redirect after user
-    approval — required for true OAuth 1.0a flows.
+    TripIt is OAuth Core 1.0 and issues no `oauth_verifier`, so none is sent.
     """
-    body = {"oauth_verifier": oauth_verifier} if oauth_verifier else None
     data = _exchange_token(
         consumer_key,
         consumer_secret,
         _ACCESS_TOKEN_PATH,
         token=request_token,
         token_secret=request_token_secret,
-        body=body,
         api_url=api_url,
     )
     return AccessToken(
