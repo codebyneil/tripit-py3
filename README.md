@@ -69,8 +69,10 @@ Then use the client:
 from tripit import TripIt
 
 with TripIt(
-    consumer_key="...", consumer_secret="...",
-    token="...",        token_secret="...",
+    consumer_key="...",
+    consumer_secret="...",
+    token="...",
+    token_secret="...",
 ) as client:
     me = client.get_profile()
     print(me.public_display_name, me.home_city)
@@ -86,8 +88,8 @@ client.get_trip("999000111222")
 client.list_trips(past=True, traveler="only", page_size=100)
 client.get_profile()
 client.list_points_programs()
-client.get_air("555111")          # AirObject with typed Segment[], FlightStatus
-client.get_lodging("555222")      # LodgingObject
+client.get_air("555111")  # AirObject with typed Segment[], FlightStatus
+client.get_lodging("555222")  # LodgingObject
 client.get_car("555333")
 client.get_rail("555444")
 client.get_transport("555555")
@@ -101,8 +103,10 @@ client.get_parking("556333")
 
 # Multi-type pagination — yields each page envelope so you see every kind:
 for page in client.list_objects_envelope(trip_id="999000111222"):
-    for air in page.air_objects: ...
-    for lodging in page.lodging_objects: ...
+    for air in page.air_objects:
+        ...
+    for lodging in page.lodging_objects:
+        ...
 ```
 
 ## Writes
@@ -111,12 +115,14 @@ for page in client.list_objects_envelope(trip_id="999000111222"):
 from datetime import date
 from tripit import Trip, AirObject, AirSegment, DateTime
 
-trip = client.create_trip(Trip(
-    start_date=date(2026, 6, 1),
-    end_date=date(2026, 6, 3),
-    display_name="Tokyo",
-    primary_location="Tokyo, JP",
-))
+trip = client.create_trip(
+    Trip(
+        start_date=date(2026, 6, 1),
+        end_date=date(2026, 6, 3),
+        display_name="Tokyo",
+        primary_location="Tokyo, JP",
+    )
+)
 
 client.replace_trip(trip.id, Trip(display_name="Tokyo (renamed)"))
 client.delete_trip(trip.id)
@@ -139,9 +145,14 @@ client.crs_delete_reservations("LOC-ABC-123")
 
 ```python
 from tripit import (
-    TripItError, TripItAuthError, TripItRateLimitError,
-    TripItServerError, TripItNotFoundError, TripItAPIError,
-    TripItValidationError, TripItTransportError,
+    TripItError,
+    TripItAuthError,
+    TripItRateLimitError,
+    TripItServerError,
+    TripItNotFoundError,
+    TripItAPIError,
+    TripItValidationError,
+    TripItTransportError,
 )
 
 try:
@@ -162,15 +173,19 @@ transient httpx network errors (5 attempts, exponential jitter, honoring
 
 ```python
 from tripit.auth import (
-    get_request_token, authorization_url, get_access_token,
+    get_request_token,
+    authorization_url,
+    get_access_token,
 )
 
 rt = get_request_token(consumer_key, consumer_secret)
 print("Visit:", authorization_url(rt.oauth_token, callback_url="oob"))
 input("Press Enter after approving...")
 at = get_access_token(
-    consumer_key, consumer_secret,
-    rt.oauth_token, rt.oauth_token_secret,
+    consumer_key,
+    consumer_secret,
+    rt.oauth_token,
+    rt.oauth_token_secret,
 )
 # at.oauth_token, at.oauth_token_secret are the values you'd save and reuse
 ```
