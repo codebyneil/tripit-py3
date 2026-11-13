@@ -21,7 +21,7 @@ import re
 from urllib.parse import urljoin
 
 import httpx
-from bs4 import BeautifulSoup, Tag  # ty: ignore[unresolved-import]
+from bs4 import BeautifulSoup, Tag  # ty: ignore[import-not-found]
 
 from scripts._capture.credentials import Credentials
 

@@ -13,7 +13,7 @@ import logging
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 
-from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
+from lxml import etree  # ty: ignore[import-not-found]  # lxml has no PEP 561 stubs
 
 from tripit import TripIt
 from tripit.exceptions import TripItError

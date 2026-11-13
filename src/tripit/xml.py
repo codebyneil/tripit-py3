@@ -20,7 +20,7 @@ from __future__ import annotations
 import functools
 from pathlib import Path
 
-from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
+from lxml import etree  # ty: ignore[import-not-found]  # lxml has no PEP 561 stubs
 from pydantic_xml import BaseXmlModel
 
 from tripit.exceptions import TripItValidationError

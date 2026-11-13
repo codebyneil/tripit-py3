@@ -25,7 +25,7 @@ import logging
 import sys
 from pathlib import Path
 
-from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
+from lxml import etree  # ty: ignore[import-not-found]  # lxml has no PEP 561 stubs
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:

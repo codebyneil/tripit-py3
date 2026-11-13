@@ -19,7 +19,7 @@ import logging
 from typing import Any
 
 import httpx
-from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
+from lxml import etree  # ty: ignore[import-not-found]  # lxml has no PEP 561 stubs
 from pydantic import ValidationError
 from tenacity import (
     RetryError,

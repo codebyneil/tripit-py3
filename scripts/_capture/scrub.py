@@ -16,7 +16,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
-from lxml import etree  # ty: ignore[unresolved-import]  # lxml has no PEP 561 stubs
+from lxml import etree  # ty: ignore[import-not-found]  # lxml has no PEP 561 stubs
 
 # Lowercase field names whose value should be replaced.
 _NAME_FIELDS = frozenset(
