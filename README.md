@@ -125,6 +125,7 @@ trip = client.create_trip(
         primary_location="Tokyo, JP",
     )
 )
+assert trip.id is not None  # `Trip.id` is typed `str | None`
 
 client.replace_trip(trip.id, Trip(display_name="Tokyo (renamed)"))
 client.delete_trip(trip.id)
@@ -162,7 +163,8 @@ try:
 except TripItNotFoundError:
     ...
 except TripItRateLimitError as e:
-    sleep(e.retry_after)
+    if e.retry_after is not None:  # None unless TripIt sent Retry-After in seconds
+        sleep(e.retry_after)
 except TripItError:
     ...
 ```
