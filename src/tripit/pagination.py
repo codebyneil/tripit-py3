@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator
-from typing import TypeVar
 
 from tripit.models.envelope import Response
 
-T = TypeVar("T")
 
-
-def paginate(
+def paginate[T](
     fetch_page: Callable[[int], Response],
     pluck: Callable[[Response], list[T]],
 ) -> Iterator[T]:

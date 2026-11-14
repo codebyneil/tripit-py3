@@ -51,6 +51,8 @@ this split: any new XSD trip-data type with no model fails CI.
 
 ## Install
 
+Requires Python 3.14 or newer.
+
 ```bash
 uv add tripit
 ```

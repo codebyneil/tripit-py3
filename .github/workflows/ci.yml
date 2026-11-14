@@ -11,7 +11,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.14", "3.15"]
+    env:
+      # uv otherwise picks the interpreter from .python-version, so without
+      # this every matrix leg would run on the same Python.
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v7
       - name: Set up uv

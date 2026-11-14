@@ -90,7 +90,7 @@ class OAuth1Auth(httpx.Auth):
         self._fixed_nonce = _nonce
         self._fixed_timestamp = _timestamp
 
-    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response, None]:
+    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response]:
         request.headers["Authorization"] = self._build_header(request)
         yield request
 
