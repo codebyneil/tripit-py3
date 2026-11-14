@@ -5,8 +5,6 @@ These wrappers are near-identical, which makes a wrong tag/pluck mapping
 endpoint and returns the right type.
 """
 
-from __future__ import annotations
-
 import httpx
 import pytest
 import respx

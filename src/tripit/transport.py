@@ -13,8 +13,6 @@ httpx network errors never leak past this module — they're always wrapped in
 `TripItTransportError`.
 """
 
-from __future__ import annotations
-
 import logging
 from typing import Any
 

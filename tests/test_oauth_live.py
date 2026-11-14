@@ -23,8 +23,6 @@ What this test exercises:
      surface it here.
 """
 
-from __future__ import annotations
-
 import json
 import os
 from pathlib import Path

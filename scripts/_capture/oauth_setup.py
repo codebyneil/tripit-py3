@@ -21,8 +21,6 @@ If `programmatic_login.approve_request_token()` succeeds, phase 2 collapses
 into the same run with no user action needed.
 """
 
-from __future__ import annotations
-
 import contextlib
 import logging
 import subprocess

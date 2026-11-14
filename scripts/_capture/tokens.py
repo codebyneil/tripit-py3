@@ -10,8 +10,6 @@ exchanged request token. If the file doesn't exist on disk, `load_tokens()`
 returns an empty `Tokens()` instance.
 """
 
-from __future__ import annotations
-
 import json
 import stat
 from dataclasses import asdict, dataclass, replace

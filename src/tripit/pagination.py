@@ -1,7 +1,5 @@
 """Auto-paginating iterator helper for `list_*` endpoints."""
 
-from __future__ import annotations
-
 from collections.abc import Callable, Iterator
 
 from tripit.models.envelope import Response

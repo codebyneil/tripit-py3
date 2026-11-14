@@ -5,8 +5,6 @@ data models only — the library exposes no write action to create a subscriptio
 (see docs/README.md "Coverage & intentional exclusions").
 """
 
-from __future__ import annotations
-
 from pydantic_xml import element
 
 from tripit.models._base import TripItModel

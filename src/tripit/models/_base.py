@@ -19,8 +19,6 @@ All entity IDs are opaque strings (XML carries no numeric type), so models use
 plain `str` rather than any coercing alias.
 """
 
-from __future__ import annotations
-
 from pydantic import ConfigDict
 from pydantic_xml import BaseXmlModel
 from pydantic_xml.model import SearchMode

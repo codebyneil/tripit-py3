@@ -1,7 +1,5 @@
 """End-to-end tests for write methods (create / replace / delete / CRS)."""
 
-from __future__ import annotations
-
 from datetime import date
 from pathlib import Path
 from urllib.parse import parse_qs

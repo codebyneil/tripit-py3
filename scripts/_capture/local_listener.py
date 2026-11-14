@@ -20,8 +20,6 @@ The listener serves a single request and shuts itself down. Binds to
 logging so captured params don't end up on stderr.
 """
 
-from __future__ import annotations
-
 import contextlib
 import http.server
 import logging

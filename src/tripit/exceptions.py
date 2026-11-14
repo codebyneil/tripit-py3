@@ -5,8 +5,6 @@ errors are wrapped in `TripItTransportError` at the transport layer — they nev
 leak to callers untyped.
 """
 
-from __future__ import annotations
-
 
 class TripItError(Exception):
     """Base class for every exception raised by this library."""

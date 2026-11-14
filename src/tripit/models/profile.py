@@ -1,7 +1,5 @@
 """Profile model and its many sub-types (all read-only in the TripIt API)."""
 
-from __future__ import annotations
-
 import datetime as _dt
 
 from pydantic_xml import attr, element

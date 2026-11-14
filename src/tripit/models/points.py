@@ -1,7 +1,5 @@
 """PointsProgram and its read-only sub-types."""
 
-from __future__ import annotations
-
 import datetime as _dt
 
 from pydantic_xml import element

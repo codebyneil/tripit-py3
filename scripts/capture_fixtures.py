@@ -12,8 +12,6 @@ reuse the cached access token.
 Writes one XML file per endpoint to `tests/fixtures/xml/real_*.xml`.
 """
 
-from __future__ import annotations
-
 import argparse
 import logging
 import sys

@@ -1,7 +1,5 @@
 """Transport-layer tests: status mapping, retries, envelope unwrap, error/warning surfacing."""
 
-from __future__ import annotations
-
 import logging
 from pathlib import Path
 

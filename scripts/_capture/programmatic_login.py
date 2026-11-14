@@ -14,8 +14,6 @@ part of the documented API surface). If a step starts failing, the manual
 fallback in oauth_setup.py is the safety net.
 """
 
-from __future__ import annotations
-
 import logging
 import re
 from urllib.parse import urljoin

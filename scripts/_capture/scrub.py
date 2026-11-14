@@ -11,8 +11,6 @@ preserved within and across fixture files (same email in multiple fixtures
 scrubs identically).
 """
 
-from __future__ import annotations
-
 import hashlib
 from typing import Any
 

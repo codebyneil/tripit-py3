@@ -6,8 +6,6 @@ IDs are opaque); counts and timestamps that the XSD types as `xs:integer` are
 `int`.
 """
 
-from __future__ import annotations
-
 import datetime as _dt
 from decimal import Decimal
 

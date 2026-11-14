@@ -7,8 +7,6 @@ read endpoints: `get_profile`, `get_points_program`, `list_points_programs`,
 Writes (`create_*`, `replace_*`, `delete_*`, CRS) are Phase 3.
 """
 
-from __future__ import annotations
-
 from collections.abc import Iterator
 from typing import Any, Literal, Self
 

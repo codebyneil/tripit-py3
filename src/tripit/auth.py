@@ -16,8 +16,6 @@ parsing the body when the content type matches and folding those fields into the
 signing inputs.
 """
 
-from __future__ import annotations
-
 import base64
 import hashlib
 import hmac

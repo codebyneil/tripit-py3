@@ -7,8 +7,6 @@ Two pieces:
   filtered to whatever the account actually has.
 """
 
-from __future__ import annotations
-
 import logging
 from collections.abc import Iterator
 from dataclasses import dataclass, field

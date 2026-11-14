@@ -12,8 +12,6 @@ Field order follows the XSD so serialized `<Request>` payloads validate against
 the sequenced complex types.
 """
 
-from __future__ import annotations
-
 import datetime as _dt
 from decimal import Decimal
 

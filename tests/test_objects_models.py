@@ -1,7 +1,5 @@
 """Parsing tests for object + profile + points models from XML."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from tripit.models import Profile, Response
