@@ -12,16 +12,15 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.14", "3.15"]
-    env:
-      # uv otherwise picks the interpreter from .python-version, so without
-      # this every matrix leg would run on the same Python.
-      UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v7
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
+          # Exports UV_PYTHON for the later steps (uv would otherwise use
+          # .python-version on every leg) and keys the uv cache per version.
+          python-version: ${{ matrix.python-version }}
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
       - name: Sync dependencies
