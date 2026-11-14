@@ -43,6 +43,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="capture_fixtures",
         description="Capture live TripIt API responses for use as test fixtures.",
+        suggest_on_error=True,
     )
     parser.add_argument(
         "--only",

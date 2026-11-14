@@ -27,7 +27,7 @@ import subprocess
 import tempfile
 import threading
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from urllib.parse import parse_qs, urlsplit
 
 logger = logging.getLogger("tripit.capture.listener")
@@ -85,6 +85,7 @@ class _CallbackHandler(http.server.BaseHTTPRequestHandler):
         # serve_forever() returns, which can't happen from inside a handler.
         threading.Thread(target=self.server.shutdown, daemon=True).start()
 
+    @override
     def log_message(self, format: str, *args: Any) -> None:
         # Silence default stderr access-log so captured params don't leak.
         return
