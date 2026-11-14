@@ -16,8 +16,6 @@ Usage:
     uv run python scripts/export_trips.py --pretty
 """
 
-from __future__ import annotations
-
 import argparse
 import datetime as _dt
 import json
@@ -165,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    with args.output.open("w") as f:
+    with args.output.open("w", encoding="utf-8") as f:
         if args.pretty:
             json.dump(payload, f, indent=2, sort_keys=True)
             f.write("\n")

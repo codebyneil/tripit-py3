@@ -1,7 +1,5 @@
 """Shared pytest fixtures + skip-by-default wiring for @pytest.mark.live."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from pathlib import Path
 

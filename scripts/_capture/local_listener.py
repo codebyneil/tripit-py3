@@ -20,18 +20,14 @@ The listener serves a single request and shuts itself down. Binds to
 logging so captured params don't end up on stderr.
 """
 
-from __future__ import annotations
-
 import contextlib
 import http.server
 import logging
-import socketserver
-import ssl
 import subprocess
 import tempfile
 import threading
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from urllib.parse import parse_qs, urlsplit
 
 logger = logging.getLogger("tripit.capture.listener")
@@ -54,8 +50,12 @@ _SUCCESS_HTML = (
 )
 
 
-class _CallbackServer(socketserver.TCPServer):
-    """Single-shot HTTP server. `captured_params` gets set by the handler."""
+class _CallbackServer(http.server.HTTPSServer):
+    """Single-shot HTTPS server. `captured_params` gets set by the handler.
+
+    `HTTPSServer` (Python 3.14+) wraps the listening socket in TLS using the
+    `certfile` / `keyfile` passed to the constructor.
+    """
 
     allow_reuse_address = True
     captured_params: dict[str, str] | None
@@ -85,6 +85,7 @@ class _CallbackHandler(http.server.BaseHTTPRequestHandler):
         # serve_forever() returns, which can't happen from inside a handler.
         threading.Thread(target=self.server.shutdown, daemon=True).start()
 
+    @override
     def log_message(self, format: str, *args: Any) -> None:
         # Silence default stderr access-log so captured params don't leak.
         return
@@ -154,10 +155,9 @@ def wait_for_callback(
     """
     cert_path, key_path = _generate_self_signed_cert(host)
     try:
-        server = _CallbackServer((host, port), _CallbackHandler)
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
-        server.socket = ctx.wrap_socket(server.socket, server_side=True)
+        server = _CallbackServer(
+            (host, port), _CallbackHandler, certfile=str(cert_path), keyfile=str(key_path)
+        )
 
         logger.info("Listening on https://%s:%d/ for OAuth redirect...", host, port)
         thread = threading.Thread(target=server.serve_forever, daemon=True)

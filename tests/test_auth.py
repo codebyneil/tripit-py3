@@ -1,7 +1,5 @@
 """Unit tests for OAuth 1.0 signing and handshake."""
 
-from __future__ import annotations
-
 import httpx
 import pytest
 import respx

@@ -10,8 +10,6 @@
   fail strict parsing (the deviation stays visible, not silently absorbed).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import pytest

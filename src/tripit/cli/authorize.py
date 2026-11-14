@@ -7,8 +7,6 @@ consumer key/secret from CLI flags, the environment (`TRIPIT_CONSUMER_KEY` /
 `TRIPIT_CONSUMER_SECRET`), or an interactive prompt — in that order.
 """
 
-from __future__ import annotations
-
 import argparse
 import os
 import sys

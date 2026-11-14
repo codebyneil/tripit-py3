@@ -5,8 +5,6 @@ their base type (`str`) for forward-compatibility; these enums expose the known
 values as constants for callers that want exhaustive matches.
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
 
 

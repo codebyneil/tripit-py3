@@ -1,7 +1,5 @@
 """The top-level Response envelope returned by every TripIt v1 endpoint."""
 
-from __future__ import annotations
-
 from datetime import datetime
 from decimal import Decimal
 

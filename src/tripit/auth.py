@@ -16,8 +16,6 @@ parsing the body when the content type matches and folding those fields into the
 signing inputs.
 """
 
-from __future__ import annotations
-
 import base64
 import hashlib
 import hmac
@@ -25,7 +23,7 @@ import secrets
 import time
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, override
 from urllib.parse import parse_qsl, quote, urlencode
 
 import httpx
@@ -90,7 +88,8 @@ class OAuth1Auth(httpx.Auth):
         self._fixed_nonce = _nonce
         self._fixed_timestamp = _timestamp
 
-    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response, None]:
+    @override
+    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response]:
         request.headers["Authorization"] = self._build_header(request)
         yield request
 

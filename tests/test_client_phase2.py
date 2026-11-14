@@ -1,7 +1,5 @@
 """End-to-end tests for profile / points / object read methods."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import httpx

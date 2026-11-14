@@ -1,7 +1,5 @@
 """Write-path tests: model -> <Request> XML envelope + request-XSD validation."""
 
-from __future__ import annotations
-
 import pytest
 
 from tripit.exceptions import TripItValidationError

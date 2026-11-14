@@ -1,7 +1,5 @@
 """The Trip model and its read-only sub-structures."""
 
-from __future__ import annotations
-
 from datetime import date
 
 from pydantic_xml import element

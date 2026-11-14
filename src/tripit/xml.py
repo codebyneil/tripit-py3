@@ -15,8 +15,6 @@ Validation against the shipped XSDs is **asymmetric** (see plan):
   opt-in conformance runs.
 """
 
-from __future__ import annotations
-
 import functools
 from pathlib import Path
 

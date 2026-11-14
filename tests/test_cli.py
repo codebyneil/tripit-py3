@@ -1,7 +1,5 @@
 """Tests for the tripit-authorize CLI."""
 
-from __future__ import annotations
-
 import io
 import sys
 from collections.abc import Iterator
