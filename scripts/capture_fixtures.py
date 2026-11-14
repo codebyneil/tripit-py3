@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             clean = scrub_xml(raw)
             out_path = FIXTURES_DIR / spec.filename
-            out_path.write_text(clean if clean.endswith("\n") else clean + "\n")
+            out_path.write_text(clean if clean.endswith("\n") else clean + "\n", encoding="utf-8")
             captured += 1
 
         log.info("Wrote %d fixture file(s) to %s", captured, FIXTURES_DIR)

@@ -59,7 +59,7 @@ def _load_secret(name: str) -> str | None:
     path = project_root / filename
     if not path.exists():
         return None
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     for key in keys:
         if data.get(key):
             return data[key]

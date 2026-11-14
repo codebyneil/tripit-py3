@@ -36,7 +36,7 @@ def load_tokens(path: Path = TOKENS_PATH) -> Tokens:
     """Read cached tokens. Returns empty `Tokens()` if the file isn't present."""
     if not path.exists():
         return Tokens()
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     return Tokens(
         access_token=data.get("access_token") or None,
         access_token_secret=data.get("access_token_secret") or None,
@@ -89,5 +89,5 @@ def clear_tokens(path: Path = TOKENS_PATH) -> Tokens:
 
 
 def _write(path: Path, tokens: Tokens) -> None:
-    path.write_text(json.dumps(asdict(tokens), indent=2) + "\n")
+    path.write_text(json.dumps(asdict(tokens), indent=2) + "\n", encoding="utf-8")
     path.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0600

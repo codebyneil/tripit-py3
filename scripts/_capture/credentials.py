@@ -59,7 +59,7 @@ def load_credentials(path: Path = CREDS_PATH) -> Credentials:
     """Resolve credentials from `path` with env-var fallback."""
     file_data: dict[str, str] = {}
     if path.exists():
-        raw = json.loads(path.read_text())
+        raw = json.loads(path.read_text(encoding="utf-8"))
         for key, value in raw.items():
             canonical = _FILE_KEY_ALIASES.get(key)
             if canonical and isinstance(value, str):
